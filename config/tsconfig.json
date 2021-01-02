@@ -13,8 +13,6 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "jsx": "react",
-    "outDir": "app",
     "downlevelIteration": true
-  },
-  "include": ["src", "webpack.config.ts"]
+  }
 }
