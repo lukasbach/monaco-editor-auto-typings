@@ -8,12 +8,11 @@ import { AutoTypings } from 'monaco-editor-auto-typings/lib/AutoTypings';
 /*
 import * as y from "./abc"
 import {X} from './dep';
+import * as z from "@blueprintjs/core"
  */
 const val = `import * as monaco from 'monaco-editor'
-import * as z from "@blueprintjs/core"
-
 import { BigIntEntityInterface, UncomplexEntityInterface } from "uncomplex";
-
+import React from 'react';
 
 
 const editor = monaco.editor.create(document.getElementById('root')!, {
@@ -32,7 +31,8 @@ const editor = monaco.editor.create(document.getElementById('root')!, {
 
 monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
-  moduleResolution: ModuleResolutionKind.NodeJs
+  moduleResolution: ModuleResolutionKind.NodeJs,
+  allowSyntheticDefaultImports: true
 });
 
 

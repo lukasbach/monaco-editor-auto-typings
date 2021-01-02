@@ -185,6 +185,7 @@ export class ImportResolver {
   }
 
   private createModel(source: string, uri: Uri) {
+    uri = uri.with({ path: uri.path.replace('@types/', '') })
     console.log("Adding model", monaco.editor.getModels().map(model => model.uri.toString()), uri.toString())
     monaco.editor.createModel(source, 'typescript', uri);
   }
