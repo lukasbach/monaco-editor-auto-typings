@@ -44,14 +44,18 @@ var path = __importStar(require("path"));
 var DependencyParser = /** @class */ (function () {
     function DependencyParser() {
         this.REGEX_CLEAN = /[\n|\r]/g;
-        this.REGEX_DETECT_IMPORT = /(?:(?:import)|(?:export))(.)*?\s+["']([^"']+)["']/g;
+        this.REGEX_DETECT_IMPORT = /(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["']/g;
     }
     DependencyParser.prototype.parseDependencies = function (source, parent) {
         var _this = this;
-        var cleaned = source.replace(this.REGEX_CLEAN, '');
-        return __spread(cleaned.matchAll(this.REGEX_DETECT_IMPORT)).map(function (x) { return x[2]; })
+        var cleaned = source; // source.replace(this.REGEX_CLEAN, '');
+        return __spread(cleaned.matchAll(this.REGEX_DETECT_IMPORT)).map(function (x) { return x[1]; })
             .filter(function (x) { return !!x; })
-            .map(function (imp) { return _this.resolvePath(imp, parent); });
+            .map(function (imp) {
+            var result = _this.resolvePath(imp, parent);
+            console.log("Parsing", imp, " to ", result);
+            return result;
+        });
     };
     DependencyParser.prototype.resolvePath = function (importPath, parent) {
         if (typeof parent === 'string') {

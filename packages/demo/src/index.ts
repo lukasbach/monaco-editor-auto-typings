@@ -3,13 +3,16 @@ import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api';
 // @ts-ignore
 import untar from 'js-untar';
 import ModuleResolutionKind = languages.typescript.ModuleResolutionKind;
+import { AutoTypings } from 'monaco-editor-auto-typings/lib/AutoTypings';
 
-const val = `import * as monaco from 'monaco-editor'
+/*
 import * as y from "./abc"
+import {X} from './dep';
+ */
+const val = `import * as monaco from 'monaco-editor'
 import * as z from "@blueprintjs/core"
 
 import { BigIntEntityInterface, UncomplexEntityInterface } from "uncomplex";
-import {X} from './dep';
 
 
 
@@ -32,24 +35,29 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
   moduleResolution: ModuleResolutionKind.NodeJs
 });
 
-const addModelFromUnpkg = async (url: string, uri: string, language = 'typescript') => {
-  const val = await (await fetch(url, { method: 'GET'})).text();
-  console.log(`Adding ${uri}...`)
-  try {
-    monaco.editor.createModel(val, 'typescript', Uri.parse(uri));
-  } catch(e) {
-    console.error(e);
-    console.log(monaco.editor.getModels().map(m => m.uri.toString()))
-  }
-}
 
-setTimeout(async () => {
-  await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/package.json`, `file://root/node_modules/uncomplex/package.json`, 'json');
-  await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/index.d.ts`, `file://root/node_modules/uncomplex/lib/index.d.ts`);
-  await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/entityInterfaces/index.d.ts`, `file://root/node_modules/uncomplex/lib/entityInterfaces/index.ts`);
-  await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/entityInterfaces/BigIntEntityInterface.d.ts`, `file://root/node_modules/uncomplex/lib/entityInterfaces/BigIntEntityInterface.ts`);
-  await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/UncomplexEntityInterface.d.ts`, `file://root/node_modules/uncomplex/lib/UncomplexEntityInterface.ts`);
-}, 500)
+const autoTypings = AutoTypings.create(editor, {
+  fileRootPath: 'file://root/'
+});
+
+// const addModelFromUnpkg = async (url: string, uri: string, language = 'typescript') => {
+//   const val = await (await fetch(url, { method: 'GET'})).text();
+//   console.log(`Adding ${uri}...`)
+//   try {
+//     monaco.editor.createModel(val, 'typescript', Uri.parse(uri));
+//   } catch(e) {
+//     console.error(e);
+//     console.log(monaco.editor.getModels().map(m => m.uri.toString()))
+//   }
+// }
+//
+// setTimeout(async () => {
+//   await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/package.json`, `file://root/node_modules/uncomplex/package.json`, 'json');
+//   await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/index.d.ts`, `file://root/node_modules/uncomplex/lib/index.d.ts`);
+//   await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/entityInterfaces/index.d.ts`, `file://root/node_modules/uncomplex/lib/entityInterfaces/index.ts`);
+//   await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/entityInterfaces/BigIntEntityInterface.d.ts`, `file://root/node_modules/uncomplex/lib/entityInterfaces/BigIntEntityInterface.ts`);
+//   await addModelFromUnpkg(`https://unpkg.com/uncomplex@1.0.0/lib/UncomplexEntityInterface.d.ts`, `file://root/node_modules/uncomplex/lib/UncomplexEntityInterface.ts`);
+// }, 500)
 
 editor.onDidChangeModelContent(e => {
   console.log(editor.getModel()?.uri)

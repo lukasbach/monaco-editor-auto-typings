@@ -27,6 +27,8 @@
     "css-loader": "^5.0.1",
     "file-loader": "^6.2.0",
     "js-untar": "^2.0.0",
+    "monaco-editor-auto-typings": "^1.0.0",
+    "path-browserify": "^1.0.1",
     "style-loader": "^2.0.0"
   }
 }

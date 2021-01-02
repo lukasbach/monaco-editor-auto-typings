@@ -28,8 +28,10 @@ export class ImportResolver {
   }
 
   public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
+    console.log("Parsing source", source, parent)
     const imports = this.dependencyParser.parseDependencies(source, parent);
     for (const importCall of imports) {
+      console.log("Import call", importCall)
       const hash = this.hashImportResourcePath(importCall);
       if (!this.loadedFiles.includes(hash)) {
         this.loadedFiles.push(hash);
@@ -50,9 +52,12 @@ export class ImportResolver {
   }
 
   private async resolveImport(importResource: ImportResourcePath) {
+    console.log("Resolving", importResource)
     switch (importResource.kind) {
       case 'package':
-        return await this.resolveImportInPackage(await this.resolveImportFromPackageRoot(importResource));
+        const packageRelativeImport = await this.resolveImportFromPackageRoot(importResource);
+        console.log("Made import relative to package:", packageRelativeImport, importResource)
+        return await this.resolveImportInPackage(packageRelativeImport);
       case 'relative':
         throw Error('Not implemented yet');
       case 'relative-in-package':
@@ -61,9 +66,14 @@ export class ImportResolver {
   }
 
   private async resolveImportInPackage(importResource: ImportResourcePathRelativeInPackage) {
-    const content = await this.loadSourceFileContents(importResource);
-    this.createModel(content, Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}`));
-    await this.resolveImportsInFile(content, importResource);
+    const { source, at } = await this.loadSourceFileContents(importResource);
+    this.createModel(source, Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at)));
+    await this.resolveImportsInFile(source, {
+      kind: 'relative-in-package',
+      packageName: importResource.packageName,
+      sourcePath: path.dirname(at),
+      importPath: ''
+    });
   }
 
   private async resolveImportFromPackageRoot(importResource: ImportResourcePathPackage): Promise<ImportResourcePathRelativeInPackage> {
@@ -74,6 +84,7 @@ export class ImportResolver {
 
     if (pkgJson) {
       const pkg = JSON.parse(pkgJson);
+      console.log(pkg, "!!")
       if (pkg.typings || pkg.types) {
         const typings = pkg.typings || pkg.types;
         this.createModel(pkgJson, Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}/package.json`));
@@ -115,17 +126,27 @@ export class ImportResolver {
     }
   }
 
-  private async loadSourceFileContents(importResource: ImportResourcePathRelativeInPackage) {
+  private async loadSourceFileContents(importResource: ImportResourcePathRelativeInPackage): Promise<{ source: string, at: string }> {
     const pkgName = importResource.packageName;
     const version = this.getVersion(importResource.packageName);
 
     let appends = ['.d.ts', '/index.d.ts', '.ts', '.tsx', '/index.ts', '/index.tsx'];
 
-    for (const append of appends) {
+    if (appends.map(append => importResource.importPath.endsWith(append)).reduce((a, b) => a || b, false)) {
       const source = await this.sourceResolver.resolveSourceFile(pkgName, version,
-        path.join(importResource.sourcePath, importResource.sourcePath));
+        path.join(importResource.sourcePath, importResource.importPath));
       if (source) {
-        return source;
+        console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath), pkgName, source)
+        return { source, at: path.join(importResource.sourcePath, importResource.importPath) };
+      }
+    } else {
+      for (const append of appends) {
+        const source = await this.sourceResolver.resolveSourceFile(pkgName, version,
+          path.join(importResource.sourcePath, importResource.importPath) + append);
+        if (source) {
+          console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath) + append, pkgName, source)
+          return { source, at: path.join(importResource.sourcePath, importResource.importPath) + append };
+        }
       }
     }
 
@@ -164,6 +185,7 @@ export class ImportResolver {
   }
 
   private createModel(source: string, uri: Uri) {
+    console.log("Adding model", monaco.editor.getModels().map(model => model.uri.toString()), uri.toString())
     monaco.editor.createModel(source, 'typescript', uri);
   }
 

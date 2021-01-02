@@ -7,6 +7,9 @@ const config: webpack.Configuration = {
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
     mainFields: ['main', 'module', 'browser'],
+    fallback: {
+      "path": require.resolve("path-browserify")
+    }
   },
   entry: './src/index.ts',
   target: 'web',

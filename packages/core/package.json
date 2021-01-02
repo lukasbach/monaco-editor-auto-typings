@@ -5,7 +5,7 @@
   "typings": "lib/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "start": "tsc",
+    "start": "tsc -w",
     "build": "tsc"
   },
   "dependencies": {

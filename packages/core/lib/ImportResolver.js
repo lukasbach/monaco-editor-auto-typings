@@ -87,6 +87,7 @@ var ImportResolver = /** @class */ (function () {
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
+                        console.log("Parsing source", source, parent);
                         imports = this.dependencyParser.parseDependencies(source, parent);
                         _b.label = 1;
                     case 1:
@@ -96,6 +97,7 @@ var ImportResolver = /** @class */ (function () {
                     case 2:
                         if (!!imports_1_1.done) return [3 /*break*/, 5];
                         importCall = imports_1_1.value;
+                        console.log("Import call", importCall);
                         hash = this.hashImportResourcePath(importCall);
                         if (!!this.loadedFiles.includes(hash)) return [3 /*break*/, 4];
                         this.loadedFiles.push(hash);
@@ -124,10 +126,11 @@ var ImportResolver = /** @class */ (function () {
     };
     ImportResolver.prototype.resolveImport = function (importResource) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
+            var _a, packageRelativeImport;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0:
+                        console.log("Resolving", importResource);
                         _a = importResource.kind;
                         switch (_a) {
                             case 'package': return [3 /*break*/, 1];
@@ -135,14 +138,15 @@ var ImportResolver = /** @class */ (function () {
                             case 'relative-in-package': return [3 /*break*/, 5];
                         }
                         return [3 /*break*/, 7];
-                    case 1:
-                        _b = this.resolveImportInPackage;
-                        return [4 /*yield*/, this.resolveImportFromPackageRoot(importResource)];
-                    case 2: return [4 /*yield*/, _b.apply(this, [_c.sent()])];
-                    case 3: return [2 /*return*/, _c.sent()];
+                    case 1: return [4 /*yield*/, this.resolveImportFromPackageRoot(importResource)];
+                    case 2:
+                        packageRelativeImport = _b.sent();
+                        console.log("Made import relative to package:", packageRelativeImport, importResource);
+                        return [4 /*yield*/, this.resolveImportInPackage(packageRelativeImport)];
+                    case 3: return [2 /*return*/, _b.sent()];
                     case 4: throw Error('Not implemented yet');
                     case 5: return [4 /*yield*/, this.resolveImportInPackage(importResource)];
-                    case 6: return [2 /*return*/, _c.sent()];
+                    case 6: return [2 /*return*/, _b.sent()];
                     case 7: return [2 /*return*/];
                 }
             });
@@ -150,16 +154,21 @@ var ImportResolver = /** @class */ (function () {
     };
     ImportResolver.prototype.resolveImportInPackage = function (importResource) {
         return __awaiter(this, void 0, void 0, function () {
-            var content;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
+            var _a, source, at;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
                     case 0: return [4 /*yield*/, this.loadSourceFileContents(importResource)];
                     case 1:
-                        content = _a.sent();
-                        this.createModel(content, editor_api_1.Uri.parse(this.options.fileRootPath + "node_modules/" + importResource.packageName));
-                        return [4 /*yield*/, this.resolveImportsInFile(content, importResource)];
+                        _a = _b.sent(), source = _a.source, at = _a.at;
+                        this.createModel(source, editor_api_1.Uri.parse(this.options.fileRootPath + path.join("node_modules/" + importResource.packageName, at)));
+                        return [4 /*yield*/, this.resolveImportsInFile(source, {
+                                kind: 'relative-in-package',
+                                packageName: importResource.packageName,
+                                sourcePath: path.dirname(at),
+                                importPath: ''
+                            })];
                     case 2:
-                        _a.sent();
+                        _b.sent();
                         return [2 /*return*/];
                 }
             });
@@ -176,6 +185,7 @@ var ImportResolver = /** @class */ (function () {
                         pkgJson = _c.sent();
                         if (!pkgJson) return [3 /*break*/, 5];
                         pkg = JSON.parse(pkgJson);
+                        console.log(pkg, "!!");
                         if (!(pkg.typings || pkg.types)) return [3 /*break*/, 2];
                         typings = pkg.typings || pkg.types;
                         this.createModel(pkgJson, editor_api_1.Uri.parse(this.options.fileRootPath + "node_modules/" + importResource.packageName + "/package.json"));
@@ -222,7 +232,7 @@ var ImportResolver = /** @class */ (function () {
     };
     ImportResolver.prototype.loadSourceFileContents = function (importResource) {
         return __awaiter(this, void 0, void 0, function () {
-            var pkgName, version, appends, appends_1, appends_1_1, append, source, e_2_1;
+            var pkgName, version, appends, source, appends_1, appends_1_1, append, source, e_2_1;
             var e_2, _a;
             return __generator(this, function (_b) {
                 switch (_b.label) {
@@ -230,36 +240,45 @@ var ImportResolver = /** @class */ (function () {
                         pkgName = importResource.packageName;
                         version = this.getVersion(importResource.packageName);
                         appends = ['.d.ts', '/index.d.ts', '.ts', '.tsx', '/index.ts', '/index.tsx'];
-                        _b.label = 1;
+                        if (!appends.map(function (append) { return importResource.importPath.endsWith(append); }).reduce(function (a, b) { return a || b; }, false)) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.sourceResolver.resolveSourceFile(pkgName, version, path.join(importResource.sourcePath, importResource.importPath))];
                     case 1:
-                        _b.trys.push([1, 6, 7, 8]);
-                        appends_1 = __values(appends), appends_1_1 = appends_1.next();
-                        _b.label = 2;
-                    case 2:
-                        if (!!appends_1_1.done) return [3 /*break*/, 5];
-                        append = appends_1_1.value;
-                        return [4 /*yield*/, this.sourceResolver.resolveSourceFile(pkgName, version, path.join(importResource.sourcePath, importResource.sourcePath))];
-                    case 3:
                         source = _b.sent();
                         if (source) {
-                            return [2 /*return*/, source];
+                            console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath), pkgName, source);
+                            return [2 /*return*/, { source: source, at: path.join(importResource.sourcePath, importResource.importPath) }];
                         }
-                        _b.label = 4;
+                        return [3 /*break*/, 9];
+                    case 2:
+                        _b.trys.push([2, 7, 8, 9]);
+                        appends_1 = __values(appends), appends_1_1 = appends_1.next();
+                        _b.label = 3;
+                    case 3:
+                        if (!!appends_1_1.done) return [3 /*break*/, 6];
+                        append = appends_1_1.value;
+                        return [4 /*yield*/, this.sourceResolver.resolveSourceFile(pkgName, version, path.join(importResource.sourcePath, importResource.importPath) + append)];
                     case 4:
+                        source = _b.sent();
+                        if (source) {
+                            console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath) + append, pkgName, source);
+                            return [2 /*return*/, { source: source, at: path.join(importResource.sourcePath, importResource.importPath) + append }];
+                        }
+                        _b.label = 5;
+                    case 5:
                         appends_1_1 = appends_1.next();
-                        return [3 /*break*/, 2];
-                    case 5: return [3 /*break*/, 8];
-                    case 6:
+                        return [3 /*break*/, 3];
+                    case 6: return [3 /*break*/, 9];
+                    case 7:
                         e_2_1 = _b.sent();
                         e_2 = { error: e_2_1 };
-                        return [3 /*break*/, 8];
-                    case 7:
+                        return [3 /*break*/, 9];
+                    case 8:
                         try {
                             if (appends_1_1 && !appends_1_1.done && (_a = appends_1.return)) _a.call(appends_1);
                         }
                         finally { if (e_2) throw e_2.error; }
                         return [7 /*endfinally*/];
-                    case 8: throw Error("Could not resolve " + importResource.packageName + "/" + importResource.sourcePath + importResource.importPath);
+                    case 9: throw Error("Could not resolve " + importResource.packageName + "/" + importResource.sourcePath + importResource.importPath);
                 }
             });
         });
@@ -294,6 +313,7 @@ var ImportResolver = /** @class */ (function () {
         this.versions = versions;
     };
     ImportResolver.prototype.createModel = function (source, uri) {
+        console.log("Adding model", monaco.editor.getModels().map(function (model) { return model.uri.toString(); }), uri.toString());
         monaco.editor.createModel(source, 'typescript', uri);
     };
     ImportResolver.prototype.hashImportResourcePath = function (p) {

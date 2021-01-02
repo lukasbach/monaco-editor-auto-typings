@@ -3,14 +3,18 @@ import * as path from 'path';
 
 export class DependencyParser {
   private REGEX_CLEAN = /[\n|\r]/g;
-  private REGEX_DETECT_IMPORT = /(?:(?:import)|(?:export))(.)*?\s+["']([^"']+)["']/g;
+  private REGEX_DETECT_IMPORT = /(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["']/g;
 
   public parseDependencies(source: string, parent: ImportResourcePath | string): ImportResourcePath[] {
-    const cleaned = source.replace(this.REGEX_CLEAN, '');
+    const cleaned = source; // source.replace(this.REGEX_CLEAN, '');
     return [...cleaned.matchAll(this.REGEX_DETECT_IMPORT)]
-      .map(x => x[2])
+      .map(x => x[1])
       .filter(x => !!x)
-      .map(imp => this.resolvePath(imp, parent));
+      .map(imp => {
+        const result = this.resolvePath(imp, parent);
+        console.log("Parsing", imp, " to ", result);
+        return result;
+      });
   }
 
   private resolvePath(importPath: string, parent: ImportResourcePath | string): ImportResourcePath {
