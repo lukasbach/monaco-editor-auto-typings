@@ -11,7 +11,8 @@
   "scripts": {
     "start": "lerna run start --parallel --npm-client=yarn",
     "start-demo": "lerna run start-demo --parallel --npm-client=yarn",
-    "build": "lerna run build --npm-client=yarn",
+    "build": "lerna run build --npm-client=yarn --stream",
+    "build-doc": "lerna run build-doc --npm-client=yarn --stream",
     "test": "lerna run test --npm-client=yarn --stream",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write ."

@@ -2,3 +2,4 @@ node_modules
 .idea
 yarn-error.log
 packages/core/lib
+packages/core/docs

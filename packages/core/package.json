@@ -1,14 +1,25 @@
 {
   "name": "monaco-editor-auto-typings",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:lukasbach/monaco-editor-auto-typings.git",
+    "directory": "packages/core"
+  },
+  "author": "Lukas Bach",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "license": "MIT",
   "scripts": {
     "start": "tsc -w",
-    "build": "tsc"
+    "build": "tsc",
+    "build-doc": "typedoc src/index.ts"
   },
   "dependencies": {
     "monaco-editor": "^0.21.2"
+  },
+  "devDependencies": {
+    "typedoc": "^0.20.10",
+    "typescript": "^4.1.3"
   }
 }
