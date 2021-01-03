@@ -16,43 +16,44 @@ import * as path from 'path';
 export class ImportResolver {
   private loadedFiles: string[];
   private dependencyParser: DependencyParser;
+  private cache: SourceCache;
+  private sourceResolver: SourceResolver;
+  private versions?: { [packageName: string]: string };
 
   constructor(
     private options: Options,
-    private cache: SourceCache,
-    private sourceResolver: SourceResolver,
-    private versions?: { [packageName: string]: string },
   ) {
     this.loadedFiles = [];
     this.dependencyParser = new DependencyParser();
-  }
+    this.cache = options.sourceCache;
+    this.sourceResolver = options.sourceResolver;
 
-  public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
-    console.log("Parsing source", source, parent)
-    const imports = this.dependencyParser.parseDependencies(source, parent);
-    for (const importCall of imports) {
-      console.log("Import call", importCall)
-      const hash = this.hashImportResourcePath(importCall);
-      if (!this.loadedFiles.includes(hash)) {
-        this.loadedFiles.push(hash);
-        await this.resolveImport(importCall);
-        // switch (importCall.kind) {
-        //   case 'absolute':
-        //   case 'relative':
-        //     throw Error('Absolute or relative resolvements not yet supported');
-        //   case 'package':
-        //     await this.sourceResolver.resolveSourceFile(
-        //       packageName,
-        //       this.versions?.[packageName],
-        //       pkg.typings.startsWith('./') ? pkg.typings.slice(2) : pkg.typings
-        //     );
-        // }
+    if (options.preloadPackages && options.versions) {
+      for (const [packageName, version] of Object.entries(options.versions)) {
+        this.resolveImport({
+          kind: 'package',
+          packageName: packageName,
+          importPath: ''
+        })
       }
     }
   }
 
+  public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
+    const imports = this.dependencyParser.parseDependencies(source, parent);
+    for (const importCall of imports) {
+      await this.resolveImport(importCall);
+    }
+  }
+
   private async resolveImport(importResource: ImportResourcePath) {
-    console.log("Resolving", importResource)
+    const hash = this.hashImportResourcePath(importResource);
+    if (this.loadedFiles.includes(hash)) {
+      return;
+    }
+
+    this.loadedFiles.push(hash);
+
     switch (importResource.kind) {
       case 'package':
         const packageRelativeImport = await this.resolveImportFromPackageRoot(importResource);
@@ -153,35 +154,21 @@ export class ImportResolver {
     throw Error(`Could not resolve ${importResource.packageName}/${importResource.sourcePath}${importResource.importPath}`);
   }
 
-  /*private async findTypingsRootFile(packageName: string): ImportResourcePath {
-    const pkgJson = await this.sourceResolver.resolvePackageJson(
-      packageName,
-      this.versions?.[packageName]
-    );
-
-    if (pkgJson) {
-      const pkg = JSON.parse(pkgJson);
-      if (pkg.typings) {
-        return {
-          kind: 'relative-in-package',
-          packageName: packageName,
-          sourcePath: '',
-          importPath: pkg.typings.startsWith('./') ? pkg.typings.slice(2) : pkg.typings
-        }
-      } else {
-
-      }
-    } else {
-      throw Error(`Cannot find package ${packageName}`);
-    }
-  }*/
-
   private getVersion(packageName: string) {
     return this.versions?.[packageName];
   }
 
-  public setVersions(versions?: { [packageName: string]: string }) {
+  public setVersions(versions: { [packageName: string]: string }) {
     this.versions = versions;
+    this.options.onUpdateVersions?.(versions);
+    // TODO reload packages whose version has changed
+  }
+
+  private setVersion(packageName: string, version: string) {
+    this.setVersions({
+      ...this.versions,
+      [packageName]: version
+    });
   }
 
   private createModel(source: string, uri: Uri) {

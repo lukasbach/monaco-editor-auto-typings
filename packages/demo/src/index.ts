@@ -3,7 +3,7 @@ import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api';
 // @ts-ignore
 import untar from 'js-untar';
 import ModuleResolutionKind = languages.typescript.ModuleResolutionKind;
-import { AutoTypings } from 'monaco-editor-auto-typings/lib/AutoTypings';
+import { AutoTypings } from 'monaco-editor-auto-typings';
 
 /*
 import * as y from "./abc"

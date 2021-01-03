@@ -11,7 +11,9 @@ export interface Options {
   /** Load typings from prespecified versions when initializing. */
   preloadPackages: boolean;
 
-  versions?: object;
+  versions?: { [packageName: string]: string };
+
+  onUpdateVersions?: (versions: { [packageName: string]: string }) => void;
 
   sourceCache: SourceCache;
 
@@ -19,4 +21,6 @@ export interface Options {
 
   /** The root directory where your edited files are. Must end with a slash. Defaults to "inmemory://model/" */
   fileRootPath: string;
+
+  debounceDuration: number;
 }
