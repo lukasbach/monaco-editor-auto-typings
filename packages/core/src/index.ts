@@ -1,6 +1,7 @@
 export * from './AutoTypings';
 export * from './ImportResourcePath';
 export * from './LocalStorageCache';
+export * from './FileSystemCache';
 export * from './Options';
 export * from './ProgressUpdate';
 export * from './SourceCache';
