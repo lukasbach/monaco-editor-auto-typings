@@ -20,8 +20,8 @@ jobs:
           mkdir -p ./out/docs
           mv ./packages/core/docs/index.html ./packages/core/docs/index.htm
           mv ./packages/demo/app/index.html ./packages/demo/app/index.htm
-          mv ./packages/core/docs/ ./out/docs/
-          mv ./packages/demo/app/ ./out/
+          mv ./packages/core/docs/ ./out/
+          mv ./packages/demo/app/* ./out/
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@3.6.2
         with:
