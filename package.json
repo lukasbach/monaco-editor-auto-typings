@@ -16,7 +16,8 @@
     "copy-readme": "copy-cli ./README.md ./packages/core",
     "test": "lerna run test --npm-client=yarn --stream",
     "prettier:check": "prettier --check .",
-    "prettier:write": "prettier --write ."
+    "prettier:write": "prettier --write .",
+    "prepublish": "yarn build && yarn copy-readme"
   },
   "devDependencies": {
     "lerna": "^3.22.1",
