@@ -1,3 +1,5 @@
 /packages/*/out
 /packages/*/docs
+/packages/*/lib
+/packages/*/app
 node_modules
