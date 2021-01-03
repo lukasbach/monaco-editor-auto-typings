@@ -7,7 +7,7 @@ export interface Options {
   shareCache: boolean;
 
   /** Only use packages specified in the `versions` property. */
-  onlySpecifiedPackages: boolean;
+  onlySpecifiedPackages: boolean; // TODO
 
   /** Load typings from prespecified versions when initializing. */
   preloadPackages: boolean;
@@ -26,6 +26,9 @@ export interface Options {
   fileRootPath: string;
 
   debounceDuration: number;
+
+  // TODO packageRecursionDepth: number;
+  // TODO fileRecursionDepth: number;
 
   onUpdate?: (update: ProgressUpdate, textual: string) => void;
 
