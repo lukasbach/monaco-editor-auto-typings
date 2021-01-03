@@ -17,6 +17,7 @@ jobs:
           yarn copy-readme
           yarn build-doc
           CI=false yarn build-demo
+          mkdir -p ./out/docs
           mv ./packages/core/docs/index.html ./packages/core/docs/index.htm
           mv ./packages/demo/app/index.html ./packages/demo/app/index.htm
           mv ./packages/core/docs/ ./out/docs/
