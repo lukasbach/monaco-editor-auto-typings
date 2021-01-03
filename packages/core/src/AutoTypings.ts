@@ -7,6 +7,7 @@ import { ImportResolver } from './ImportResolver';
 import * as path from 'path';
 import * as monaco from 'monaco-editor';
 import { invokeUpdate } from './invokeUpdate';
+import { RecursionDepth } from './RecursionDepth';
 
 export class AutoTypings implements IDisposable {
   private static sharedCache?: SourceCache;
@@ -52,6 +53,8 @@ export class AutoTypings implements IDisposable {
         sourceCache: AutoTypings.sharedCache ?? new DummySourceCache(),
         sourceResolver: new UnpkgSourceResolver(),
         debounceDuration: 4000,
+        fileRecursionDepth: 10,
+        packageRecursionDepth: 3,
         ...options
       }
     );
@@ -108,7 +111,11 @@ export class AutoTypings implements IDisposable {
     const content = model.getLinesContent();
 
     try {
-      await this.importResolver.resolveImportsInFile(content.join('\n'), path.dirname(model.uri.toString()));
+      await this.importResolver.resolveImportsInFile(
+        content.join('\n'),
+        path.dirname(model.uri.toString()),
+        new RecursionDepth(this.options)
+      );
     } catch(e) {
       if (this.options.onError) {
         this.options.onError((e as Error).message ?? e);

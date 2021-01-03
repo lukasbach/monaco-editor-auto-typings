@@ -13,6 +13,7 @@ import {
 import { SourceResolver } from './SourceResolver';
 import * as path from 'path';
 import { invokeUpdate } from './invokeUpdate';
+import { RecursionDepth } from './RecursionDepth';
 
 export class ImportResolver {
   private loadedFiles: string[];
@@ -33,11 +34,14 @@ export class ImportResolver {
 
     if (options.preloadPackages && options.versions) {
       for (const [packageName, version] of Object.entries(options.versions)) {
-        this.resolveImport({
-          kind: 'package',
-          packageName: packageName,
-          importPath: ''
-        })
+        this.resolveImport(
+          {
+            kind: 'package',
+            packageName: packageName,
+            importPath: ''
+          },
+          new RecursionDepth(this.options)
+        )
       }
     }
   }
@@ -50,14 +54,18 @@ export class ImportResolver {
     this.newImportsResolved = false;
   }
 
-  public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
+  public async resolveImportsInFile(source: string, parent: string | ImportResourcePath, depth: RecursionDepth) {
+    if (depth.shouldStop()) {
+      return;
+    }
+
     const imports = this.dependencyParser.parseDependencies(source, parent);
     for (const importCall of imports) {
-      await this.resolveImport(importCall);
+      await this.resolveImport(importCall, depth);
     }
   }
 
-  private async resolveImport(importResource: ImportResourcePath) {
+  private async resolveImport(importResource: ImportResourcePath, depth: RecursionDepth) {
     const hash = this.hashImportResourcePath(importResource);
     if (this.loadedFiles.includes(hash)) {
       return;
@@ -69,17 +77,17 @@ export class ImportResolver {
       case 'package':
         const packageRelativeImport = await this.resolveImportFromPackageRoot(importResource);
         if (packageRelativeImport) {
-          return await this.resolveImportInPackage(packageRelativeImport);
+          return await this.resolveImportInPackage(packageRelativeImport, depth.nextPackage().nextFile());
         }
         break;
       case 'relative':
         throw Error('Not implemented yet');
       case 'relative-in-package':
-        return await this.resolveImportInPackage(importResource);
+        return await this.resolveImportInPackage(importResource, depth.nextFile());
     }
   }
 
-  private async resolveImportInPackage(importResource: ImportResourcePathRelativeInPackage) {
+  private async resolveImportInPackage(importResource: ImportResourcePathRelativeInPackage, depth: RecursionDepth) {
     const { source, at } = await this.loadSourceFileContents(importResource);
     this.createModel(source, Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at)));
     await this.resolveImportsInFile(source, {
@@ -87,7 +95,7 @@ export class ImportResolver {
       packageName: importResource.packageName,
       sourcePath: path.dirname(at),
       importPath: ''
-    });
+    }, depth);
   }
 
   private async resolveImportFromPackageRoot(importResource: ImportResourcePathPackage): Promise<ImportResourcePathRelativeInPackage | undefined> {
@@ -97,6 +105,13 @@ export class ImportResolver {
       definitelyTyped: false,
       success: false
     } as const;
+
+    if (this.options.onlySpecifiedPackages) {
+      if (!this.versions?.[importResource.packageName] && !this.versions?.['@types/' + importResource.packageName]) {
+        invokeUpdate(failedProgressUpdate, this.options);
+        return;
+      }
+    }
 
     const pkgJson = await this.resolvePackageJson(
       importResource.packageName,
@@ -149,17 +164,13 @@ export class ImportResolver {
             };
           } else {
             invokeUpdate(failedProgressUpdate, this.options);
-            // throw Error(`${typingPackageName} exists, but does not provide types.`)
           }
         } else {
           invokeUpdate(failedProgressUpdate, this.options);
-          // throw Error(`Package exists ${importResource.packageName}, but does not provide typings, `
-          //   + `and ${typingPackageName} does not exist.`);
         }
       }
     } else {
       invokeUpdate(failedProgressUpdate, this.options);
-      // throw Error(`Cannot find package ${importResource.packageName}`);
     }
   }
 
