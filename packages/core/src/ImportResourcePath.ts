@@ -20,7 +20,7 @@ export interface ImportResourcePathRelativeInPackage {
 }
 
 export type ImportResourcePath =
-    ImportResourcePathPackage
+  | ImportResourcePathPackage
   | ImportResourcePathRelative
   | ImportResourcePathRelativeInPackage;
 
@@ -33,4 +33,4 @@ export const importResourcePathToString = (p: ImportResourcePath) => {
     case 'relative-in-package':
       return path.join(p.packageName, p.sourcePath, p.importPath);
   }
-}
+};

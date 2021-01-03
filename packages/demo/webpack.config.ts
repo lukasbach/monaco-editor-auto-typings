@@ -8,8 +8,8 @@ const config: webpack.Configuration = {
     extensions: ['.tsx', '.ts', '.js'],
     mainFields: ['main', 'module', 'browser'],
     fallback: {
-      "path": require.resolve("path-browserify")
-    }
+      path: require.resolve('path-browserify'),
+    },
   },
   entry: './src/index.ts',
   target: 'web',
@@ -23,12 +23,12 @@ const config: webpack.Configuration = {
       },
       {
         test: /\.css$/,
-        use: ['style-loader', 'css-loader']
+        use: ['style-loader', 'css-loader'],
       },
       {
         test: /\.ttf$/,
-        use: ['file-loader']
-      }
+        use: ['file-loader'],
+      },
     ],
   },
   devServer: {
@@ -43,7 +43,7 @@ const config: webpack.Configuration = {
     path: path.resolve(__dirname, 'app'),
     filename: 'js/[name].js',
     publicPath: './',
-    libraryTarget: 'global'
+    libraryTarget: 'global',
   },
   plugins: [
     new HtmlWebpackPlugin({

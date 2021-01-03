@@ -16,10 +16,7 @@ export class AutoTypings implements IDisposable {
   private isResolving?: boolean;
   private disposables: IDisposable[];
 
-  private constructor(
-    private editor: editor.ICodeEditor,
-    private options: Options,
-  ) {
+  private constructor(private editor: editor.ICodeEditor, private options: Options) {
     this.disposables = [];
     this.importResolver = new ImportResolver(options);
     const changeModelDisposable = editor.onDidChangeModelContent(e => {
@@ -31,7 +28,7 @@ export class AutoTypings implements IDisposable {
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
         ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
         moduleResolution: languages.typescript.ModuleResolutionKind.NodeJs,
-        allowSyntheticDefaultImports: true
+        allowSyntheticDefaultImports: true,
       });
     }
   }
@@ -41,23 +38,20 @@ export class AutoTypings implements IDisposable {
       AutoTypings.sharedCache = options.sourceCache;
     }
 
-    return new AutoTypings(
-      editor,
-{
-        fileRootPath: 'inmemory://model/',
-        onlySpecifiedPackages: false,
-        preloadPackages: false,
-        shareCache: false,
-        dontAdaptEditorOptions: false,
-        dontRefreshModelValueAfterResolvement: false,
-        sourceCache: AutoTypings.sharedCache ?? new DummySourceCache(),
-        sourceResolver: new UnpkgSourceResolver(),
-        debounceDuration: 4000,
-        fileRecursionDepth: 10,
-        packageRecursionDepth: 3,
-        ...options
-      }
-    );
+    return new AutoTypings(editor, {
+      fileRootPath: 'inmemory://model/',
+      onlySpecifiedPackages: false,
+      preloadPackages: false,
+      shareCache: false,
+      dontAdaptEditorOptions: false,
+      dontRefreshModelValueAfterResolvement: false,
+      sourceCache: AutoTypings.sharedCache ?? new DummySourceCache(),
+      sourceResolver: new UnpkgSourceResolver(),
+      debounceDuration: 4000,
+      fileRecursionDepth: 10,
+      packageRecursionDepth: 3,
+      ...options,
+    });
   }
 
   public dispose() {
@@ -80,9 +74,12 @@ export class AutoTypings implements IDisposable {
       return;
     }
 
-    invokeUpdate({
-      type: 'CodeChanged'
-    }, this.options);
+    invokeUpdate(
+      {
+        type: 'CodeChanged',
+      },
+      this.options
+    );
 
     if (this.options.debounceDuration <= 0) {
       this.resolveContents();
@@ -99,13 +96,16 @@ export class AutoTypings implements IDisposable {
 
   private async resolveContents() {
     this.isResolving = true;
-    invokeUpdate({
-      type: 'ResolveNewImports'
-    }, this.options);
+    invokeUpdate(
+      {
+        type: 'ResolveNewImports',
+      },
+      this.options
+    );
 
     const model = this.editor.getModel();
     if (!model) {
-      throw Error("No model");
+      throw Error('No model');
     }
 
     const content = model.getLinesContent();
@@ -116,7 +116,7 @@ export class AutoTypings implements IDisposable {
         path.dirname(model.uri.toString()),
         new RecursionDepth(this.options)
       );
-    } catch(e) {
+    } catch (e) {
       if (this.options.onError) {
         this.options.onError((e as Error).message ?? e);
       } else {

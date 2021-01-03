@@ -21,50 +21,51 @@ export class DependencyParser {
       if (importPath.startsWith('.')) {
         return {
           kind: 'relative',
-          importPath, sourcePath: parent
+          importPath,
+          sourcePath: parent,
         };
       } else if (importPath.startsWith('@')) {
         const segments = importPath.split('/');
         return {
           kind: 'package',
           packageName: `${segments[0]}/${segments[1]}`,
-          importPath: segments.slice(2).join('/')
+          importPath: segments.slice(2).join('/'),
         };
       } else {
         const segments = importPath.split('/');
         return {
           kind: 'package',
           packageName: segments[0],
-          importPath: segments.slice(1).join('/')
+          importPath: segments.slice(1).join('/'),
         };
       }
     } else {
       switch (parent.kind) {
         case 'package':
-          throw Error("TODO?");
+          throw Error('TODO?');
         case 'relative':
-          throw Error("TODO2?");
+          throw Error('TODO2?');
         case 'relative-in-package':
           if (importPath.startsWith('.')) {
             return {
               kind: 'relative-in-package',
               packageName: parent.packageName,
               sourcePath: path.join(parent.sourcePath, parent.importPath),
-              importPath: importPath
+              importPath: importPath,
             };
           } else if (importPath.startsWith('@')) {
             const segments = importPath.split('/');
             return {
               kind: 'package',
               packageName: `${segments[0]}/${segments[1]}`,
-              importPath: segments.slice(2).join('/')
+              importPath: segments.slice(2).join('/'),
             };
           } else {
             const segments = importPath.split('/');
             return {
               kind: 'package',
               packageName: segments[0],
-              importPath: segments.slice(1).join('/')
+              importPath: segments.slice(1).join('/'),
             };
           }
       }

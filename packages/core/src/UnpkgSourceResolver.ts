@@ -5,12 +5,16 @@ export class UnpkgSourceResolver implements SourceResolver {
     return await this.resolveFile(`https://unpkg.com/${packageName}${version ? `@${version}` : ''}/package.json`);
   }
 
-  public async resolveSourceFile(packageName: string, version: string | undefined, path: string): Promise<string | undefined> {
+  public async resolveSourceFile(
+    packageName: string,
+    version: string | undefined,
+    path: string
+  ): Promise<string | undefined> {
     return await this.resolveFile(`https://unpkg.com/${packageName}${version ? `@${version}` : ''}/${path}`);
   }
 
   private async resolveFile(url: string) {
-    const res = await fetch(url, { method: 'GET'});
+    const res = await fetch(url, { method: 'GET' });
 
     if (res.ok) {
       return await res.text();
@@ -20,4 +24,4 @@ export class UnpkgSourceResolver implements SourceResolver {
       throw Error(`Error other than 404 while fetching from Unpkg at ${url}`);
     }
   }
-  }
+}

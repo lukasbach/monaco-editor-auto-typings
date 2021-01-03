@@ -21,10 +21,14 @@ export const invokeUpdate = (progress: ProgressUpdate, options: Options) => {
       textual += `"${progress.path}" was ${progress.success ? 'sucessfully' : 'not sucessfully'} looked up`;
       break;
     case 'AttemptedLookUpFile':
-      textual += `"${progress.path}" was ${progress.success ? 'sucessfully' : 'not sucessfully'} attempted to looked up`;
+      textual += `"${progress.path}" was ${
+        progress.success ? 'sucessfully' : 'not sucessfully'
+      } attempted to looked up`;
       break;
     case 'LookedUpPackage':
-      textual += `package.json for package "${progress.package}" was ${progress.success ? 'sucessfully' : 'not sucessfully'} looked up${progress.definitelyTyped ? ' (found in definitely typed repo)' : ''}`;
+      textual += `package.json for package "${progress.package}" was ${
+        progress.success ? 'sucessfully' : 'not sucessfully'
+      } looked up${progress.definitelyTyped ? ' (found in definitely typed repo)' : ''}`;
       break;
     case 'LoadedFromCache':
       textual += `"${progress.importPath}" was loaded from cache`;
@@ -38,8 +42,5 @@ export const invokeUpdate = (progress: ProgressUpdate, options: Options) => {
     textual = textual.slice(undefined, -2);
   }
 
-  options.onUpdate?.(
-    progress,
-    textual
-  );
-}
+  options.onUpdate?.(progress, textual);
+};

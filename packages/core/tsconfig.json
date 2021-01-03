@@ -5,8 +5,5 @@
     "outDir": "lib",
     "declaration": true
   },
-  "include": [
-    "./src",
-    "./webpack.config.ts"
-  ]
+  "include": ["./src", "./webpack.config.ts"]
 }

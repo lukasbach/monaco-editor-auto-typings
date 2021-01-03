@@ -8,7 +8,8 @@ import { DependencyParser } from './DependencyParser';
 import {
   ImportResourcePath,
   ImportResourcePathPackage,
-  ImportResourcePathRelativeInPackage, importResourcePathToString,
+  ImportResourcePathRelativeInPackage,
+  importResourcePathToString,
 } from './ImportResourcePath';
 import { SourceResolver } from './SourceResolver';
 import * as path from 'path';
@@ -23,9 +24,7 @@ export class ImportResolver {
   private versions?: { [packageName: string]: string };
   private newImportsResolved: boolean;
 
-  constructor(
-    private options: Options,
-  ) {
+  constructor(private options: Options) {
     this.loadedFiles = [];
     this.dependencyParser = new DependencyParser();
     this.cache = options.sourceCache;
@@ -38,10 +37,10 @@ export class ImportResolver {
           {
             kind: 'package',
             packageName: packageName,
-            importPath: ''
+            importPath: '',
           },
           new RecursionDepth(this.options)
-        )
+        );
       }
     }
   }
@@ -89,21 +88,30 @@ export class ImportResolver {
 
   private async resolveImportInPackage(importResource: ImportResourcePathRelativeInPackage, depth: RecursionDepth) {
     const { source, at } = await this.loadSourceFileContents(importResource);
-    this.createModel(source, Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at)));
-    await this.resolveImportsInFile(source, {
-      kind: 'relative-in-package',
-      packageName: importResource.packageName,
-      sourcePath: path.dirname(at),
-      importPath: ''
-    }, depth);
+    this.createModel(
+      source,
+      Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at))
+    );
+    await this.resolveImportsInFile(
+      source,
+      {
+        kind: 'relative-in-package',
+        packageName: importResource.packageName,
+        sourcePath: path.dirname(at),
+        importPath: '',
+      },
+      depth
+    );
   }
 
-  private async resolveImportFromPackageRoot(importResource: ImportResourcePathPackage): Promise<ImportResourcePathRelativeInPackage | undefined> {
+  private async resolveImportFromPackageRoot(
+    importResource: ImportResourcePathPackage
+  ): Promise<ImportResourcePathRelativeInPackage | undefined> {
     const failedProgressUpdate = {
       type: 'LookedUpPackage',
       package: importResource.packageName,
       definitelyTyped: false,
-      success: false
+      success: false,
     } as const;
 
     if (this.options.onlySpecifiedPackages) {
@@ -122,45 +130,56 @@ export class ImportResolver {
       const pkg = JSON.parse(pkgJson);
       if (pkg.typings || pkg.types) {
         const typings = pkg.typings || pkg.types;
-        this.createModel(pkgJson, Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}/package.json`));
-        invokeUpdate({
-          type: 'LookedUpPackage',
-          package: importResource.packageName,
-          definitelyTyped: false,
-          success: true
-        }, this.options);
+        this.createModel(
+          pkgJson,
+          Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}/package.json`)
+        );
+        invokeUpdate(
+          {
+            type: 'LookedUpPackage',
+            package: importResource.packageName,
+            definitelyTyped: false,
+            success: true,
+          },
+          this.options
+        );
         this.setVersion(importResource.packageName, pkg.version);
         return {
           kind: 'relative-in-package',
           packageName: importResource.packageName,
           sourcePath: '',
-          importPath: typings.startsWith('./') ? typings.slice(2) : typings
+          importPath: typings.startsWith('./') ? typings.slice(2) : typings,
         };
       } else {
-        const typingPackageName = `@types/${importResource.packageName.startsWith('@')
-          ? importResource.packageName.slice(1).replace(/\//, '__')
-          : importResource.packageName}`;
-        const pkgJsonTypings = await this.resolvePackageJson(
-          typingPackageName,
-          this.versions?.[typingPackageName]
-        );
+        const typingPackageName = `@types/${
+          importResource.packageName.startsWith('@')
+            ? importResource.packageName.slice(1).replace(/\//, '__')
+            : importResource.packageName
+        }`;
+        const pkgJsonTypings = await this.resolvePackageJson(typingPackageName, this.versions?.[typingPackageName]);
         if (pkgJsonTypings) {
           const pkg = JSON.parse(pkgJsonTypings);
           if (pkg.typings || pkg.types) {
             const typings = pkg.typings || pkg.types;
-            this.createModel(pkgJsonTypings, Uri.parse(`${this.options.fileRootPath}node_modules/${typingPackageName}/package.json`));
-            invokeUpdate({
-              type: 'LookedUpPackage',
-              package: typingPackageName,
-              definitelyTyped: true,
-              success: true
-            }, this.options);
+            this.createModel(
+              pkgJsonTypings,
+              Uri.parse(`${this.options.fileRootPath}node_modules/${typingPackageName}/package.json`)
+            );
+            invokeUpdate(
+              {
+                type: 'LookedUpPackage',
+                package: typingPackageName,
+                definitelyTyped: true,
+                success: true,
+              },
+              this.options
+            );
             this.setVersion(typingPackageName, pkg.version);
             return {
               kind: 'relative-in-package',
               packageName: typingPackageName,
               sourcePath: '',
-              importPath: typings.startsWith('./') ? typings.slice(2) : typings
+              importPath: typings.startsWith('./') ? typings.slice(2) : typings,
             };
           } else {
             invokeUpdate(failedProgressUpdate, this.options);
@@ -174,14 +193,20 @@ export class ImportResolver {
     }
   }
 
-  private async loadSourceFileContents(importResource: ImportResourcePathRelativeInPackage): Promise<{ source: string, at: string }> {
-    const progressUpdatePath = path.join(importResource.packageName, importResource.sourcePath, importResource.importPath);
+  private async loadSourceFileContents(
+    importResource: ImportResourcePathRelativeInPackage
+  ): Promise<{ source: string; at: string }> {
+    const progressUpdatePath = path.join(
+      importResource.packageName,
+      importResource.sourcePath,
+      importResource.importPath
+    );
 
     const failedProgressUpdate = {
       type: 'LookedUpTypeFile',
       path: progressUpdatePath,
       definitelyTyped: false,
-      success: false
+      success: false,
     } as const;
 
     const pkgName = importResource.packageName;
@@ -190,8 +215,11 @@ export class ImportResolver {
     let appends = ['.d.ts', '/index.d.ts', '.ts', '.tsx', '/index.ts', '/index.tsx'];
 
     if (appends.map(append => importResource.importPath.endsWith(append)).reduce((a, b) => a || b, false)) {
-      const source = await this.resolveSourceFile(pkgName, version,
-        path.join(importResource.sourcePath, importResource.importPath));
+      const source = await this.resolveSourceFile(
+        pkgName,
+        version,
+        path.join(importResource.sourcePath, importResource.importPath)
+      );
       if (source) {
         return { source, at: path.join(importResource.sourcePath, importResource.importPath) };
       }
@@ -199,24 +227,32 @@ export class ImportResolver {
       for (const append of appends) {
         const fullPath = path.join(importResource.sourcePath, importResource.importPath) + append;
         const source = await this.resolveSourceFile(pkgName, version, fullPath);
-        invokeUpdate({
-          type: 'AttemptedLookUpFile',
-          path: path.join(pkgName, fullPath),
-          success: !!source
-        }, this.options);
-        if (source) {
-          invokeUpdate({
-            type: 'LookedUpTypeFile',
+        invokeUpdate(
+          {
+            type: 'AttemptedLookUpFile',
             path: path.join(pkgName, fullPath),
-            success: true
-          }, this.options);
+            success: !!source,
+          },
+          this.options
+        );
+        if (source) {
+          invokeUpdate(
+            {
+              type: 'LookedUpTypeFile',
+              path: path.join(pkgName, fullPath),
+              success: true,
+            },
+            this.options
+          );
           return { source, at: path.join(importResource.sourcePath, importResource.importPath) + append };
         }
       }
     }
 
     invokeUpdate(failedProgressUpdate, this.options);
-    throw Error(`Could not resolve ${importResource.packageName}/${importResource.sourcePath}${importResource.importPath}`);
+    throw Error(
+      `Could not resolve ${importResource.packageName}/${importResource.sourcePath}${importResource.importPath}`
+    );
   }
 
   private getVersion(packageName: string) {
@@ -232,12 +268,12 @@ export class ImportResolver {
   private setVersion(packageName: string, version: string) {
     this.setVersions({
       ...this.versions,
-      [packageName]: version
+      [packageName]: version,
     });
   }
 
   private createModel(source: string, uri: Uri) {
-    uri = uri.with({ path: uri.path.replace('@types/', '') })
+    uri = uri.with({ path: uri.path.replace('@types/', '') });
     monaco.editor.createModel(source, 'typescript', uri);
     this.newImportsResolved = true;
   }
@@ -259,7 +295,7 @@ export class ImportResolver {
     }
 
     if (isAvailable) {
-      return content ?? await this.cache.getFile(uri);
+      return content ?? (await this.cache.getFile(uri));
     } else {
       content = await this.sourceResolver.resolvePackageJson(packageName, version);
       if (content) {
@@ -269,7 +305,11 @@ export class ImportResolver {
     }
   }
 
-  private async resolveSourceFile(packageName: string, version: string | undefined, filePath: string): Promise<string | undefined> {
+  private async resolveSourceFile(
+    packageName: string,
+    version: string | undefined,
+    filePath: string
+  ): Promise<string | undefined> {
     const uri = path.join(packageName + (version ? `@${version}` : ''), filePath);
     let isAvailable = false;
     let content: string | undefined = undefined;
@@ -282,18 +322,24 @@ export class ImportResolver {
     }
 
     if (isAvailable) {
-      invokeUpdate({
-        type: 'LoadedFromCache',
-        importPath: uri
-      }, this.options);
-      return content ?? await this.cache.getFile(uri);
+      invokeUpdate(
+        {
+          type: 'LoadedFromCache',
+          importPath: uri,
+        },
+        this.options
+      );
+      return content ?? (await this.cache.getFile(uri));
     } else {
       content = await this.sourceResolver.resolveSourceFile(packageName, version, filePath);
       if (content) {
-        invokeUpdate({
-          type: 'StoredToCache',
-          importPath: uri
-        }, this.options);
+        invokeUpdate(
+          {
+            type: 'StoredToCache',
+            importPath: uri,
+          },
+          this.options
+        );
         this.cache.storeFile(uri, content);
       }
       return content;
