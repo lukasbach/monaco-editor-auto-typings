@@ -11,6 +11,7 @@
   "scripts": {
     "start": "lerna run start --parallel --npm-client=yarn",
     "start-demo": "lerna run start-demo --parallel --npm-client=yarn",
+    "build-demo": "lerna run build-demo --npm-client=yarn --stream",
     "build": "lerna run build --npm-client=yarn --stream",
     "build-doc": "lerna run build-doc --npm-client=yarn --stream",
     "copy-readme": "copy-cli ./README.md ./packages/core",

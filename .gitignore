@@ -4,3 +4,4 @@ yarn-error.log
 packages/core/lib
 packages/core/docs
 packages/core/README.md
+packages/demo/app
