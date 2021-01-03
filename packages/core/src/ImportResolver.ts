@@ -43,19 +43,7 @@ export class ImportResolver {
   public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
     const imports = this.dependencyParser.parseDependencies(source, parent);
     for (const importCall of imports) {
-      invokeUpdate({
-        type: 'DetectedImport',
-        source: typeof parent === 'string' ? parent : importResourcePathToString(parent),
-        importPath: importResourcePathToString(importCall)
-      }, this.options);
-
       await this.resolveImport(importCall);
-
-      invokeUpdate({
-        type: 'CompletedImport',
-        source: typeof parent === 'string' ? parent : importResourcePathToString(parent),
-        importPath: importResourcePathToString(importCall)
-      }, this.options);
     }
   }
 
@@ -115,6 +103,7 @@ export class ImportResolver {
           definitelyTyped: false,
           success: true
         }, this.options);
+        this.setVersion(importResource.packageName, pkg.version);
         return {
           kind: 'relative-in-package',
           packageName: importResource.packageName,
@@ -140,6 +129,7 @@ export class ImportResolver {
               definitelyTyped: true,
               success: true
             }, this.options);
+            this.setVersion(typingPackageName, pkg.version);
             return {
               kind: 'relative-in-package',
               packageName: typingPackageName,

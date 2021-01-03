@@ -1,32 +1,41 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api';
-// @ts-ignore
-import untar from 'js-untar';
-import ModuleResolutionKind = languages.typescript.ModuleResolutionKind;
 import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings';
+import { editorContents } from './editorContents';
 
-const val = `import * as monaco from 'monaco-editor'
-import { BigIntEntityInterface, UncomplexEntityInterface } from "uncomplex";
-import React from 'react';
+import './style.css';
 
-const x = BigIntEntityInterface;
-const y: UncomplexEntityInterface = {
-  entityId: 'asd'
-}`;
-
-const editor = monaco.editor.create(document.getElementById('root')!, {
-  model: monaco.editor.createModel(val, 'typescript', /*Uri.parse('file://root/index.ts')*/),
+const editor = monaco.editor.create(document.getElementById('editor-mountpoint')!, {
+  model: monaco.editor.createModel(editorContents, 'typescript', /*Uri.parse('file://root/index.ts')*/),
 });
 
-// monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-//   ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
-//   moduleResolution: ModuleResolutionKind.NodeJs,
-//   allowSyntheticDefaultImports: true
-// });
-
-const autoTypings = AutoTypings.create(editor, {
-  // fileRootPath: 'file://root/',
+AutoTypings.create(editor, {
+  // Cache declaration files to local storage
   sourceCache: new LocalStorageCache(),
-  onUpdate: (u, t) => console.log(t),
-  onError: e => console.error(e),
+
+  // Log progress updates to a div console
+  onUpdate: (u, t) => {
+    const mountPoint = document.getElementById("logs-mountpoint")!;
+    const log = document.createElement("div");
+    log.innerHTML = t;
+    mountPoint.appendChild(log);
+    mountPoint.scrollTop = mountPoint.scrollHeight;
+  },
+
+  // Log errors to a div console
+  onError: (e) => {
+    const mountPoint = document.getElementById("logs-mountpoint")!;
+    const log = document.createElement("div");
+    log.classList.add("err");
+    log.innerHTML = e;
+    mountPoint.appendChild(log);
+    mountPoint.scrollTop = mountPoint.scrollHeight;
+  },
+
+  // Print loaded versions to DOM
+  onUpdateVersions: versions => {
+    console.log(versions)
+    document.getElementById("versions-mountpoint")!.innerHTML = (
+      Object.entries(versions).map(v => `<div>${v[0]}: ${v[1]}</div>`)
+    ).join('');
+  }
 });

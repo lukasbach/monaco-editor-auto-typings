@@ -1,0 +1,91 @@
+html, body, #root {
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    padding: 10px 48px;
+    background-color: #eee;
+}
+
+header > h1 {
+    display: block;
+    flex-grow: 1;
+}
+
+main {
+    flex-grow: 1;
+    display: flex;
+    overflow: auto;
+}
+
+main > div {
+}
+
+#editor-mountpoint {
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.right-container {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 450px;
+    max-width: 450px;
+}
+
+.info-panel {
+    background-color: #abcdef;
+    border-radius: 8px;
+    padding: 0 12px;
+    margin: 8px;
+    font-size: 13px;
+}
+
+.versions {
+    min-height: 200px;
+    max-height: 200px;
+    overflow: auto;
+}
+
+.versions h2 {
+    font-size: 14px;
+    margin: 8px;
+}
+
+#versions-mountpoint > div {
+    padding: 2px 8px;
+    font-family: "Courier New", monospace;
+    font-size: 12px;
+}
+
+#versions-mountpoint > div:nth-child(2n) {
+    background-color: #eeeeee;
+}
+#versions-mountpoint > div:nth-child(2n) {
+    background-color: #e7e7e7;
+}
+
+#logs-mountpoint {
+    min-width: 450px;
+    max-width: 450px;
+    flex-grow: 1;
+    overflow: auto;
+    font-family: "Courier New", monospace;
+    color: #555;
+    font-size: 11px;
+}
+
+#logs-mountpoint > div {
+    padding: 3px 4px;
+}

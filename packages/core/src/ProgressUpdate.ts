@@ -3,14 +3,6 @@ export type ProgressUpdate = {
 } | {
   type: 'ResolveNewImports'
 } | {
-  type: 'DetectedImport';
-  source: string;
-  importPath: string;
-} | {
-  type: 'CompletedImport';
-  source: string;
-  importPath: string;
-} | {
   type: 'LookedUpTypeFile';
   path: string;
   success: boolean;
