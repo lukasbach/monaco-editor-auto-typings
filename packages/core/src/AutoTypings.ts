@@ -1,4 +1,4 @@
-import { editor, languages } from 'monaco-editor';
+import { editor, IDisposable, languages } from 'monaco-editor';
 import { SourceCache } from './SourceCache';
 import { Options } from './Options';
 import { DummySourceCache } from './DummySourceCache';
@@ -8,20 +8,23 @@ import * as path from 'path';
 import * as monaco from 'monaco-editor';
 import { invokeUpdate } from './invokeUpdate';
 
-export class AutoTypings {
+export class AutoTypings implements IDisposable {
   private static sharedCache?: SourceCache;
   private importResolver: ImportResolver;
   private debounceTimer?: number;
   private isResolving?: boolean;
+  private disposables: IDisposable[];
 
   private constructor(
     private editor: editor.ICodeEditor,
     private options: Options,
   ) {
+    this.disposables = [];
     this.importResolver = new ImportResolver(options);
-    editor.onDidChangeModelContent(e => {
+    const changeModelDisposable = editor.onDidChangeModelContent(e => {
       this.debouncedResolveContents();
     });
+    this.disposables.push(changeModelDisposable);
     this.resolveContents();
     if (!options.dontAdaptEditorOptions) {
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
@@ -54,6 +57,12 @@ export class AutoTypings {
     );
   }
 
+  public dispose() {
+    for (const disposable of this.disposables) {
+      disposable.dispose();
+    }
+  }
+
   public setVersions(versions: { [packageName: string]: string }) {
     this.importResolver.setVersions(versions);
     this.options.versions = versions;
@@ -78,10 +87,10 @@ export class AutoTypings {
       if (this.debounceTimer !== undefined) {
         clearTimeout(this.debounceTimer);
       }
-      setTimeout(async () => {
+      this.debounceTimer = setTimeout(async () => {
         await this.resolveContents();
         this.debounceTimer = undefined;
-      }, this.options.debounceDuration);
+      }, this.options.debounceDuration) as any;
     }
   }
 
