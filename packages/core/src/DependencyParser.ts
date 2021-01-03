@@ -12,7 +12,6 @@ export class DependencyParser {
       .filter(x => !!x)
       .map(imp => {
         const result = this.resolvePath(imp, parent);
-        console.log("Parsing", imp, " to ", result);
         return result;
       });
   }

@@ -53,12 +53,10 @@ export class ImportResolver {
     }
 
     this.loadedFiles.push(hash);
-    console.log(this.loadedFiles)
 
     switch (importResource.kind) {
       case 'package':
         const packageRelativeImport = await this.resolveImportFromPackageRoot(importResource);
-        console.log("Made import relative to package:", packageRelativeImport, importResource)
         return await this.resolveImportInPackage(packageRelativeImport);
       case 'relative':
         throw Error('Not implemented yet');
@@ -86,7 +84,6 @@ export class ImportResolver {
 
     if (pkgJson) {
       const pkg = JSON.parse(pkgJson);
-      console.log(pkg, "!!")
       if (pkg.typings || pkg.types) {
         const typings = pkg.typings || pkg.types;
         this.createModel(pkgJson, Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}/package.json`));
@@ -138,7 +135,6 @@ export class ImportResolver {
       const source = await this.resolveSourceFile(pkgName, version,
         path.join(importResource.sourcePath, importResource.importPath));
       if (source) {
-        console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath), pkgName, source)
         return { source, at: path.join(importResource.sourcePath, importResource.importPath) };
       }
     } else {
@@ -146,7 +142,6 @@ export class ImportResolver {
         const source = await this.resolveSourceFile(pkgName, version,
           path.join(importResource.sourcePath, importResource.importPath) + append);
         if (source) {
-          console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath) + append, pkgName, source)
           return { source, at: path.join(importResource.sourcePath, importResource.importPath) + append };
         }
       }
@@ -174,7 +169,6 @@ export class ImportResolver {
 
   private createModel(source: string, uri: Uri) {
     uri = uri.with({ path: uri.path.replace('@types/', '') })
-    console.log("Adding model", monaco.editor.getModels().map(model => model.uri.toString()), uri.toString())
     monaco.editor.createModel(source, 'typescript', uri);
   }
 

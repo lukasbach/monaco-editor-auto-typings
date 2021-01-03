@@ -8,6 +8,7 @@ import * as path from 'path';
 import * as monaco from 'monaco-editor';
 
 export class AutoTypings {
+  private static sharedCache?: SourceCache;
   private importResolver: ImportResolver;
   private debounceTimer?: number;
   private isResolving?: boolean;
@@ -31,6 +32,10 @@ export class AutoTypings {
   }
 
   public static create(editor: editor.ICodeEditor, options?: Partial<Options>): AutoTypings {
+    if (options?.shareCache && options.sourceCache && !AutoTypings.sharedCache) {
+      AutoTypings.sharedCache = options.sourceCache;
+    }
+
     return new AutoTypings(
       editor,
 {
@@ -39,7 +44,7 @@ export class AutoTypings {
         preloadPackages: false,
         shareCache: false,
         dontAdaptEditorOptions: false,
-        sourceCache: new DummySourceCache(),
+        sourceCache: AutoTypings.sharedCache ?? new DummySourceCache(),
         sourceResolver: new UnpkgSourceResolver(),
         debounceDuration: 4000,
         ...options
@@ -52,7 +57,9 @@ export class AutoTypings {
     this.options.versions = versions;
   }
 
-  public getVersions(versions: object) {}
+  public async clearCache() {
+    await this.options.sourceCache.clear();
+  }
 
   private debouncedResolveContents() {
     if (this.isResolving) {

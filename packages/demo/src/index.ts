@@ -61,20 +61,16 @@ const autoTypings = AutoTypings.create(editor, {
 // }, 500)
 
 editor.onDidChangeModelContent(e => {
-  console.log(editor.getModel()?.uri)
-
   const imports = editor.getModel()?.getLinesContent()
     .filter(l => /import(.)*from\s+["']([^"']+)["']/.exec(l))
     .map(l => /import(.)*from\s+["']([^"']+)["']/.exec(l)![2])
     .filter(l => !l.startsWith('.'))
     .forEach(async importName => {
       const data = await fetch(`https://unpkg.com/uncomplex@1.0.0/lib/index.d.ts`, { method: 'GET'});
-      console.log("!")
       // monaco.editor.createModel(
       //   'export const X = 1;',
       //   'typescript', Uri.parse('file://root/dep.ts')
       // );
-      console.log("!")
 
 
       /*monaco.editor.createModel(
@@ -101,7 +97,6 @@ editor.onDidChangeModelContent(e => {
         await (await fetch(`https://unpkg.com/uncomplex@1.0.0/lib/UncomplexEntityInterface.d.ts`, { method: 'GET'})).text(),
         'typescript', Uri.parse('file://root/node_modules/uncomplex/UncomplexEntityInterface.ts')
       );*/
-      console.log(monaco.editor.getModels().map(m => m.uri.toString()))
     });
 
 })
