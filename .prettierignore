@@ -4,3 +4,4 @@
 /packages/*/app
 node_modules
 out
+lerna.json
