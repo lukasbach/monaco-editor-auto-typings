@@ -47,8 +47,8 @@ const autoTypings = AutoTypings.create(editor, {
 
 ## Known Limitations
 
-- Currently, scoped packages (``@org/...``) are not supported. This feature is blocked by
-  [this issue](https://github.com/microsoft/monaco-editor/issues/2295). ``@types/...`` packages
+- Currently, scoped packages (`@org/...`) are not supported. This feature is blocked by
+  [this issue](https://github.com/microsoft/monaco-editor/issues/2295). `@types/...` packages
   are not affected and work fine.
 
 ## Configuration
