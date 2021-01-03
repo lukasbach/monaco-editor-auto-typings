@@ -3,3 +3,4 @@ node_modules
 yarn-error.log
 packages/core/lib
 packages/core/docs
+packages/core/README.md

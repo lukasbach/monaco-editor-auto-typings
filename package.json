@@ -13,13 +13,15 @@
     "start-demo": "lerna run start-demo --parallel --npm-client=yarn",
     "build": "lerna run build --npm-client=yarn --stream",
     "build-doc": "lerna run build-doc --npm-client=yarn --stream",
+    "copy-readme": "copy-cli ./README.md ./packages/core",
     "test": "lerna run test --npm-client=yarn --stream",
     "prettier:check": "prettier --check .",
     "prettier:write": "prettier --write ."
   },
   "devDependencies": {
     "lerna": "^3.22.1",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "copy": "^0.3.2"
   },
   "workspaces": [
     "packages/*"
