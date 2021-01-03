@@ -1,10 +1,11 @@
-import { editor } from "monaco-editor";
+import { editor, languages } from 'monaco-editor';
 import { SourceCache } from './SourceCache';
 import { Options } from './Options';
 import { DummySourceCache } from './DummySourceCache';
 import { UnpkgSourceResolver } from './UnpkgSourceResolver';
 import { ImportResolver } from './ImportResolver';
 import * as path from 'path';
+import * as monaco from 'monaco-editor';
 
 export class AutoTypings {
   private importResolver: ImportResolver;
@@ -20,6 +21,13 @@ export class AutoTypings {
       this.debouncedResolveContents();
     });
     this.resolveContents();
+    if (!options.dontAdaptEditorOptions) {
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
+        moduleResolution: languages.typescript.ModuleResolutionKind.NodeJs,
+        allowSyntheticDefaultImports: true
+      });
+    }
   }
 
   public static create(editor: editor.ICodeEditor, options?: Partial<Options>): AutoTypings {
@@ -30,6 +38,7 @@ export class AutoTypings {
         onlySpecifiedPackages: false,
         preloadPackages: false,
         shareCache: false,
+        dontAdaptEditorOptions: false,
         sourceCache: new DummySourceCache(),
         sourceResolver: new UnpkgSourceResolver(),
         debounceDuration: 4000,

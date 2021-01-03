@@ -53,6 +53,7 @@ export class ImportResolver {
     }
 
     this.loadedFiles.push(hash);
+    console.log(this.loadedFiles)
 
     switch (importResource.kind) {
       case 'package':
@@ -78,7 +79,7 @@ export class ImportResolver {
   }
 
   private async resolveImportFromPackageRoot(importResource: ImportResourcePathPackage): Promise<ImportResourcePathRelativeInPackage> {
-    const pkgJson = await this.sourceResolver.resolvePackageJson(
+    const pkgJson = await this.resolvePackageJson(
       importResource.packageName,
       this.versions?.[importResource.packageName]
     );
@@ -99,7 +100,7 @@ export class ImportResolver {
         const typingPackageName = `@types/${importResource.packageName.startsWith('@')
           ? importResource.packageName.slice(1).replace(/\//, '__')
           : importResource.packageName}`;
-        const pkgJsonTypings = await this.sourceResolver.resolvePackageJson(
+        const pkgJsonTypings = await this.resolvePackageJson(
           typingPackageName,
           this.versions?.[typingPackageName]
         );
@@ -134,7 +135,7 @@ export class ImportResolver {
     let appends = ['.d.ts', '/index.d.ts', '.ts', '.tsx', '/index.ts', '/index.tsx'];
 
     if (appends.map(append => importResource.importPath.endsWith(append)).reduce((a, b) => a || b, false)) {
-      const source = await this.sourceResolver.resolveSourceFile(pkgName, version,
+      const source = await this.resolveSourceFile(pkgName, version,
         path.join(importResource.sourcePath, importResource.importPath));
       if (source) {
         console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath), pkgName, source)
@@ -142,7 +143,7 @@ export class ImportResolver {
       }
     } else {
       for (const append of appends) {
-        const source = await this.sourceResolver.resolveSourceFile(pkgName, version,
+        const source = await this.resolveSourceFile(pkgName, version,
           path.join(importResource.sourcePath, importResource.importPath) + append);
         if (source) {
           console.log("Found source code at " + path.join(importResource.sourcePath, importResource.importPath) + append, pkgName, source)
@@ -180,11 +181,57 @@ export class ImportResolver {
   private hashImportResourcePath(p: ImportResourcePath) {
     switch (p.kind) {
       case 'package':
-        return `${p.packageName}/${p.importPath}`;
+        return path.join(p.packageName, p.importPath ?? '');
       case 'relative':
-        return `.${p.sourcePath}/${p.importPath}`;
+        return path.join(p.sourcePath, p.importPath);
       case 'relative-in-package':
-        return `${p.packageName}/${p.sourcePath}/${p.importPath}`;
+        return path.join(p.packageName, p.sourcePath, p.importPath);
+    }
+  }
+
+  private async resolvePackageJson(packageName: string, version?: string): Promise<string | undefined> {
+    const uri = path.join(packageName + (version ? `@${version}` : ''), 'package.json');
+    let isAvailable = false;
+    let content: string | undefined = undefined;
+
+    if (this.cache.isFileAvailable) {
+      isAvailable = await this.cache.isFileAvailable(uri);
+    } else {
+      content = await this.cache.getFile(uri);
+      isAvailable = content !== undefined;
+    }
+
+    if (isAvailable) {
+      return content ?? await this.cache.getFile(uri);
+    } else {
+      content = await this.sourceResolver.resolvePackageJson(packageName, version);
+      if (content) {
+        this.cache.storeFile(uri, content);
+      }
+      return content;
+    }
+  }
+
+  private async resolveSourceFile(packageName: string, version: string | undefined, filePath: string): Promise<string | undefined> {
+    const uri = path.join(packageName + (version ? `@${version}` : ''), filePath);
+    let isAvailable = false;
+    let content: string | undefined = undefined;
+
+    if (this.cache.isFileAvailable) {
+      isAvailable = await this.cache.isFileAvailable(uri);
+    } else {
+      content = await this.cache.getFile(uri);
+      isAvailable = content !== undefined;
+    }
+
+    if (isAvailable) {
+      return content ?? await this.cache.getFile(uri);
+    } else {
+      content = await this.sourceResolver.resolveSourceFile(packageName, version, filePath);
+      if (content) {
+        this.cache.storeFile(uri, content);
+      }
+      return content;
     }
   }
 }

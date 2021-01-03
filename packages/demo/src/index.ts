@@ -3,7 +3,7 @@ import { languages, Uri } from 'monaco-editor/esm/vs/editor/editor.api';
 // @ts-ignore
 import untar from 'js-untar';
 import ModuleResolutionKind = languages.typescript.ModuleResolutionKind;
-import { AutoTypings } from 'monaco-editor-auto-typings';
+import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings';
 
 /*
 import * as y from "./abc"
@@ -37,7 +37,8 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
 
 
 const autoTypings = AutoTypings.create(editor, {
-  fileRootPath: 'file://root/'
+  fileRootPath: 'file://root/',
+  sourceCache: new LocalStorageCache()
 });
 
 // const addModelFromUnpkg = async (url: string, uri: string, language = 'typescript') => {

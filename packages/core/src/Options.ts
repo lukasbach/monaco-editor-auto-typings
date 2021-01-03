@@ -11,6 +11,8 @@ export interface Options {
   /** Load typings from prespecified versions when initializing. */
   preloadPackages: boolean;
 
+  dontAdaptEditorOptions: boolean;
+
   versions?: { [packageName: string]: string };
 
   onUpdateVersions?: (versions: { [packageName: string]: string }) => void;
