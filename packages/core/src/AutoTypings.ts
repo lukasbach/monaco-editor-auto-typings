@@ -6,6 +6,7 @@ import { UnpkgSourceResolver } from './UnpkgSourceResolver';
 import { ImportResolver } from './ImportResolver';
 import * as path from 'path';
 import * as monaco from 'monaco-editor';
+import { invokeUpdate } from './invokeUpdate';
 
 export class AutoTypings {
   private static sharedCache?: SourceCache;
@@ -66,6 +67,10 @@ export class AutoTypings {
       return;
     }
 
+    invokeUpdate({
+      type: 'CodeChanged'
+    }, this.options);
+
     if (this.options.debounceDuration <= 0) {
       this.isResolving = true;
       this.resolveContents().then(() => {
@@ -85,11 +90,23 @@ export class AutoTypings {
   }
 
   private async resolveContents() {
+    invokeUpdate({
+      type: 'ResolveNewImports'
+    }, this.options);
+
     const model = this.editor.getModel();
     if (!model) {
       throw Error("No model");
     }
     const content = model.getLinesContent();
-    await this.importResolver.resolveImportsInFile(content.join('\n'), path.dirname(model.uri.toString()));
+    try {
+      await this.importResolver.resolveImportsInFile(content.join('\n'), path.dirname(model.uri.toString()));
+    } catch(e) {
+      if (this.options.onError) {
+        this.options.onError((e as Error).message ?? e);
+      } else {
+        throw e;
+      }
+    }
   }
 }

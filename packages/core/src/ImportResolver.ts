@@ -8,10 +8,11 @@ import { DependencyParser } from './DependencyParser';
 import {
   ImportResourcePath,
   ImportResourcePathPackage,
-  ImportResourcePathRelativeInPackage,
+  ImportResourcePathRelativeInPackage, importResourcePathToString,
 } from './ImportResourcePath';
 import { SourceResolver } from './SourceResolver';
 import * as path from 'path';
+import { invokeUpdate } from './invokeUpdate';
 
 export class ImportResolver {
   private loadedFiles: string[];
@@ -42,7 +43,19 @@ export class ImportResolver {
   public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
     const imports = this.dependencyParser.parseDependencies(source, parent);
     for (const importCall of imports) {
+      invokeUpdate({
+        type: 'DetectedImport',
+        source: typeof parent === 'string' ? parent : importResourcePathToString(parent),
+        importPath: importResourcePathToString(importCall)
+      }, this.options);
+
       await this.resolveImport(importCall);
+
+      invokeUpdate({
+        type: 'CompletedImport',
+        source: typeof parent === 'string' ? parent : importResourcePathToString(parent),
+        importPath: importResourcePathToString(importCall)
+      }, this.options);
     }
   }
 
@@ -57,7 +70,9 @@ export class ImportResolver {
     switch (importResource.kind) {
       case 'package':
         const packageRelativeImport = await this.resolveImportFromPackageRoot(importResource);
-        return await this.resolveImportInPackage(packageRelativeImport);
+        if (packageRelativeImport) {
+          return await this.resolveImportInPackage(packageRelativeImport);
+        }
       case 'relative':
         throw Error('Not implemented yet');
       case 'relative-in-package':
@@ -76,7 +91,14 @@ export class ImportResolver {
     });
   }
 
-  private async resolveImportFromPackageRoot(importResource: ImportResourcePathPackage): Promise<ImportResourcePathRelativeInPackage> {
+  private async resolveImportFromPackageRoot(importResource: ImportResourcePathPackage): Promise<ImportResourcePathRelativeInPackage | undefined> {
+    const failedProgressUpdate = {
+      type: 'LookedUpPackage',
+      package: importResource.packageName,
+      definitelyTyped: false,
+      success: false
+    } as const;
+
     const pkgJson = await this.resolvePackageJson(
       importResource.packageName,
       this.versions?.[importResource.packageName]
@@ -87,6 +109,12 @@ export class ImportResolver {
       if (pkg.typings || pkg.types) {
         const typings = pkg.typings || pkg.types;
         this.createModel(pkgJson, Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}/package.json`));
+        invokeUpdate({
+          type: 'LookedUpPackage',
+          package: importResource.packageName,
+          definitelyTyped: false,
+          success: true
+        }, this.options);
         return {
           kind: 'relative-in-package',
           packageName: importResource.packageName,
@@ -106,6 +134,12 @@ export class ImportResolver {
           if (pkg.typings || pkg.types) {
             const typings = pkg.typings || pkg.types;
             this.createModel(pkgJsonTypings, Uri.parse(`${this.options.fileRootPath}node_modules/${typingPackageName}/package.json`));
+            invokeUpdate({
+              type: 'LookedUpPackage',
+              package: typingPackageName,
+              definitelyTyped: true,
+              success: true
+            }, this.options);
             return {
               kind: 'relative-in-package',
               packageName: typingPackageName,
@@ -113,19 +147,31 @@ export class ImportResolver {
               importPath: typings.startsWith('./') ? typings.slice(2) : typings
             };
           } else {
-            throw Error(`${typingPackageName} exists, but does not provide types.`)
+            invokeUpdate(failedProgressUpdate, this.options);
+            // throw Error(`${typingPackageName} exists, but does not provide types.`)
           }
         } else {
-          throw Error(`Package exists ${importResource.packageName}, but does not provide typings, `
-            + `and ${typingPackageName} does not exist.`);
+          invokeUpdate(failedProgressUpdate, this.options);
+          // throw Error(`Package exists ${importResource.packageName}, but does not provide typings, `
+          //   + `and ${typingPackageName} does not exist.`);
         }
       }
     } else {
-      throw Error(`Cannot find package ${importResource.packageName}`);
+      invokeUpdate(failedProgressUpdate, this.options);
+      // throw Error(`Cannot find package ${importResource.packageName}`);
     }
   }
 
   private async loadSourceFileContents(importResource: ImportResourcePathRelativeInPackage): Promise<{ source: string, at: string }> {
+    const progressUpdatePath = path.join(importResource.packageName, importResource.sourcePath, importResource.importPath);
+
+    const failedProgressUpdate = {
+      type: 'LookedUpTypeFile',
+      path: progressUpdatePath,
+      definitelyTyped: false,
+      success: false
+    } as const;
+
     const pkgName = importResource.packageName;
     const version = this.getVersion(importResource.packageName);
 
@@ -139,14 +185,25 @@ export class ImportResolver {
       }
     } else {
       for (const append of appends) {
-        const source = await this.resolveSourceFile(pkgName, version,
-          path.join(importResource.sourcePath, importResource.importPath) + append);
+        const fullPath = path.join(importResource.sourcePath, importResource.importPath) + append;
+        const source = await this.resolveSourceFile(pkgName, version, fullPath);
+        invokeUpdate({
+          type: 'AttemptedLookUpFile',
+          path: fullPath,
+          success: !!source
+        }, this.options);
         if (source) {
+          invokeUpdate({
+            type: 'LookedUpTypeFile',
+            path: fullPath,
+            success: true
+          }, this.options);
           return { source, at: path.join(importResource.sourcePath, importResource.importPath) + append };
         }
       }
     }
 
+    invokeUpdate(failedProgressUpdate, this.options);
     throw Error(`Could not resolve ${importResource.packageName}/${importResource.sourcePath}${importResource.importPath}`);
   }
 
@@ -173,14 +230,7 @@ export class ImportResolver {
   }
 
   private hashImportResourcePath(p: ImportResourcePath) {
-    switch (p.kind) {
-      case 'package':
-        return path.join(p.packageName, p.importPath ?? '');
-      case 'relative':
-        return path.join(p.sourcePath, p.importPath);
-      case 'relative-in-package':
-        return path.join(p.packageName, p.sourcePath, p.importPath);
-    }
+    return importResourcePathToString(p);
   }
 
   private async resolvePackageJson(packageName: string, version?: string): Promise<string | undefined> {
@@ -219,10 +269,18 @@ export class ImportResolver {
     }
 
     if (isAvailable) {
+      invokeUpdate({
+        type: 'LoadedFromCache',
+        importPath: uri
+      }, this.options);
       return content ?? await this.cache.getFile(uri);
     } else {
       content = await this.sourceResolver.resolveSourceFile(packageName, version, filePath);
       if (content) {
+        invokeUpdate({
+          type: 'StoredToCache',
+          importPath: uri
+        }, this.options);
         this.cache.storeFile(uri, content);
       }
       return content;

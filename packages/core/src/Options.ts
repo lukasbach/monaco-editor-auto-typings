@@ -1,5 +1,6 @@
 import { SourceCache } from './SourceCache';
 import { SourceResolver } from './SourceResolver';
+import { ProgressUpdate } from './ProgressUpdate';
 
 export interface Options {
   /** Share source cache between multiple editor instances by storing the cache in a static property. */
@@ -25,4 +26,8 @@ export interface Options {
   fileRootPath: string;
 
   debounceDuration: number;
+
+  onUpdate?: (update: ProgressUpdate, textual: string) => void;
+
+  onError?: (error: string) => void;
 }

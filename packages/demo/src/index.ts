@@ -38,7 +38,9 @@ monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
 
 const autoTypings = AutoTypings.create(editor, {
   fileRootPath: 'file://root/',
-  sourceCache: new LocalStorageCache()
+  sourceCache: new LocalStorageCache(),
+  onUpdate: (u, t) => console.log(t),
+  onError: e => console.error(e),
 });
 
 // const addModelFromUnpkg = async (url: string, uri: string, language = 'typescript') => {
