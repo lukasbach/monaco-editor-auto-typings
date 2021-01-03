@@ -18,7 +18,7 @@ cached in localStorage or elsewhere.
 - Demo: [lukasbach.github.io/monaco-editor-auto-typings](https://lukasbach.github.io/monaco-editor-auto-typings/)
 - Documentation: [lukasbach.github.io/monaco-editor-auto-typings/docs](https://lukasbach.github.io/monaco-editor-auto-typings/docs/)
 
-![Example image](./screenshot.png)
+![Example image](https://raw.githubusercontent.com/lukasbach/monaco-editor-auto-typings/HEAD/screenshot.png)
 
 ## Example
 
