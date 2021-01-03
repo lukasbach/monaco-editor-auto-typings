@@ -1,6 +1,28 @@
 # monaco-editor-auto-typings
 
-# Example
+![Main](https://github.com/lukasbach/monaco-editor-auto-typings/workflows/Main/badge.svg)
+
+> View the demo at [lukasbach.github.io/monaco-editor-auto-typings](https://lukasbach.github.io/monaco-editor-auto-typings/)
+
+monaco-editor-auto-typings is a plugin for [Microsoft's Monaco Editor](https://microsoft.github.io/monaco-editor/),
+which automatically loads type declarations when you enter import-calls in the code editor.
+
+Try it out in the [demo](https://lukasbach.github.io/monaco-editor-auto-typings/)! Add some imports to some
+libraries available on npm, such as `import express from 'express';`, and see that any imported variables
+are automatically strictly typed.
+
+monaco-editor-auto-typings comes with lots of customization options, but is still a one-liner to
+add to your project. It works by loading declarations from UnPkg. They can then be optionally
+cached in localStorage or elsewhere.
+
+- Demo: [lukasbach.github.io/monaco-editor-auto-typings](https://lukasbach.github.io/monaco-editor-auto-typings/)
+- Documentation: [lukasbach.github.io/monaco-editor-auto-typings/docs](https://lukasbach.github.io/monaco-editor-auto-typings/docs/)
+
+![Example image](./screenshot.png)
+
+## Example
+
+Install via `yarn add monaco-editor-auto-typings` or `npm install monaco-editor-auto-typings --save`.
 
 ```typescript
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
@@ -23,7 +45,15 @@ const autoTypings = AutoTypings.create(editor, {
 });
 ```
 
+## Known Limitations
+
+- Currently, scoped packages (``@org/...``) are not supported. This feature is blocked by
+  [this issue](https://github.com/microsoft/monaco-editor/issues/2295). ``@types/...`` packages
+  are not affected and work fine.
+
 ## Configuration
+
+https://lukasbach.github.io/monaco-editor-auto-typings/docs/interfaces/options.html
 
 ```typescript
 export interface Options {

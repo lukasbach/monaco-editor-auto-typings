@@ -3,3 +3,4 @@
 /packages/*/lib
 /packages/*/app
 node_modules
+out
