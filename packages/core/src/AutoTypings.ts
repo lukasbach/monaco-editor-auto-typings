@@ -45,6 +45,7 @@ export class AutoTypings {
         preloadPackages: false,
         shareCache: false,
         dontAdaptEditorOptions: false,
+        dontRefreshModelValueAfterResolvement: false,
         sourceCache: AutoTypings.sharedCache ?? new DummySourceCache(),
         sourceResolver: new UnpkgSourceResolver(),
         debounceDuration: 4000,
@@ -72,24 +73,20 @@ export class AutoTypings {
     }, this.options);
 
     if (this.options.debounceDuration <= 0) {
-      this.isResolving = true;
-      this.resolveContents().then(() => {
-        this.isResolving = false;
-      });
+      this.resolveContents();
     } else {
       if (this.debounceTimer !== undefined) {
         clearTimeout(this.debounceTimer);
       }
       setTimeout(async () => {
-        this.isResolving = true;
         await this.resolveContents();
-        this.isResolving = false;
         this.debounceTimer = undefined;
       }, this.options.debounceDuration);
     }
   }
 
   private async resolveContents() {
+    this.isResolving = true;
     invokeUpdate({
       type: 'ResolveNewImports'
     }, this.options);
@@ -98,7 +95,9 @@ export class AutoTypings {
     if (!model) {
       throw Error("No model");
     }
+
     const content = model.getLinesContent();
+
     try {
       await this.importResolver.resolveImportsInFile(content.join('\n'), path.dirname(model.uri.toString()));
     } catch(e) {
@@ -108,5 +107,14 @@ export class AutoTypings {
         throw e;
       }
     }
+
+    if (this.importResolver.wereNewImportsResolved()) {
+      if (!this.options.dontRefreshModelValueAfterResolvement) {
+        model.setValue(model.getValue());
+      }
+      this.importResolver.resetNewImportsResolved();
+    }
+
+    this.isResolving = false;
   }
 }

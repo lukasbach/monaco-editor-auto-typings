@@ -8,9 +8,11 @@ const editor = monaco.editor.create(document.getElementById('editor-mountpoint')
   model: monaco.editor.createModel(editorContents, 'typescript', /*Uri.parse('file://root/index.ts')*/),
 });
 
+const cache = new LocalStorageCache();
+
 AutoTypings.create(editor, {
   // Cache declaration files to local storage
-  sourceCache: new LocalStorageCache(),
+  sourceCache: cache,
 
   // Log progress updates to a div console
   onUpdate: (u, t) => {
@@ -39,3 +41,5 @@ AutoTypings.create(editor, {
     ).join('');
   }
 });
+
+document.getElementById('reset-cache')!.onclick = () => cache.clear();

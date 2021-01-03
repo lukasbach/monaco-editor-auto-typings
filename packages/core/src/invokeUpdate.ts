@@ -11,12 +11,12 @@ export const invokeUpdate = (progress: ProgressUpdate, options: Options) => {
     case 'ResolveNewImports':
       textual += ``;
       break;
-    case 'DetectedImport':
-      textual += `at "${progress.source}" the import "${progress.importPath}" was detected`;
-      break;
-    case 'CompletedImport':
-      textual += `at "${progress.source}" the import "${progress.importPath}" was completed`;
-      break;
+    // case 'DetectedImport':
+    //   textual += `at "${progress.source}" the import "${progress.importPath}" was detected`;
+    //   break;
+    // case 'CompletedImport':
+    //   textual += `at "${progress.source}" the import "${progress.importPath}" was completed`;
+    //   break;
     case 'LookedUpTypeFile':
       textual += `"${progress.path}" was ${progress.success ? 'sucessfully' : 'not sucessfully'} looked up`;
       break;

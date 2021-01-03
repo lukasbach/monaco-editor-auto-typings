@@ -20,6 +20,7 @@ export class ImportResolver {
   private cache: SourceCache;
   private sourceResolver: SourceResolver;
   private versions?: { [packageName: string]: string };
+  private newImportsResolved: boolean;
 
   constructor(
     private options: Options,
@@ -28,6 +29,7 @@ export class ImportResolver {
     this.dependencyParser = new DependencyParser();
     this.cache = options.sourceCache;
     this.sourceResolver = options.sourceResolver;
+    this.newImportsResolved = false;
 
     if (options.preloadPackages && options.versions) {
       for (const [packageName, version] of Object.entries(options.versions)) {
@@ -38,6 +40,14 @@ export class ImportResolver {
         })
       }
     }
+  }
+
+  public wereNewImportsResolved() {
+    return this.newImportsResolved;
+  }
+
+  public resetNewImportsResolved() {
+    this.newImportsResolved = false;
   }
 
   public async resolveImportsInFile(source: string, parent: string | ImportResourcePath) {
@@ -217,6 +227,7 @@ export class ImportResolver {
   private createModel(source: string, uri: Uri) {
     uri = uri.with({ path: uri.path.replace('@types/', '') })
     monaco.editor.createModel(source, 'typescript', uri);
+    this.newImportsResolved = true;
   }
 
   private hashImportResourcePath(p: ImportResourcePath) {

@@ -63,6 +63,10 @@ main > div {
     margin: 8px;
 }
 
+#reset-cache {
+    font-size: 12px;
+}
+
 #versions-mountpoint > div {
     padding: 2px 8px;
     font-family: "Courier New", monospace;
