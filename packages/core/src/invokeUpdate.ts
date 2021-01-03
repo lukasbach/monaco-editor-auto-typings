@@ -34,6 +34,10 @@ export const invokeUpdate = (progress: ProgressUpdate, options: Options) => {
       break;
   }
 
+  if (textual.endsWith(': ')) {
+    textual = textual.slice(undefined, -2);
+  }
+
   options.onUpdate?.(
     progress,
     textual

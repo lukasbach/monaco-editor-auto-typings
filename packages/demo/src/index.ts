@@ -35,7 +35,6 @@ AutoTypings.create(editor, {
 
   // Print loaded versions to DOM
   onUpdateVersions: versions => {
-    console.log(versions)
     document.getElementById("versions-mountpoint")!.innerHTML = (
       Object.entries(versions).map(v => `<div>${v[0]}: ${v[1]}</div>`)
     ).join('');

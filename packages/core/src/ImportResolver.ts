@@ -71,6 +71,7 @@ export class ImportResolver {
         if (packageRelativeImport) {
           return await this.resolveImportInPackage(packageRelativeImport);
         }
+        break;
       case 'relative':
         throw Error('Not implemented yet');
       case 'relative-in-package':
@@ -189,13 +190,13 @@ export class ImportResolver {
         const source = await this.resolveSourceFile(pkgName, version, fullPath);
         invokeUpdate({
           type: 'AttemptedLookUpFile',
-          path: fullPath,
+          path: path.join(pkgName, fullPath),
           success: !!source
         }, this.options);
         if (source) {
           invokeUpdate({
             type: 'LookedUpTypeFile',
-            path: fullPath,
+            path: path.join(pkgName, fullPath),
             success: true
           }, this.options);
           return { source, at: path.join(importResource.sourcePath, importResource.importPath) + append };

@@ -93,3 +93,7 @@ main > div {
 #logs-mountpoint > div {
     padding: 3px 4px;
 }
+
+#logs-mountpoint > div.err {
+    background-color: #ffa7a7;
+}
