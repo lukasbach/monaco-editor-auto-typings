@@ -1,6 +1,6 @@
 {
   "name": "monaco-editor-auto-typings",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "repository": {
     "type": "git",
     "url": "git@github.com:lukasbach/monaco-editor-auto-typings.git",
