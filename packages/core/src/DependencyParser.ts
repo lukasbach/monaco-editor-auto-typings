@@ -3,12 +3,12 @@ import * as path from 'path';
 
 export class DependencyParser {
   private REGEX_CLEAN = /[\n|\r]/g;
-  private REGEX_DETECT_IMPORT = /(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["']/g;
+  private REGEX_DETECT_IMPORT = /(?:(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+path=["']([^"']+)["']\s+\/>)/g;
 
   public parseDependencies(source: string, parent: ImportResourcePath | string): ImportResourcePath[] {
     const cleaned = source; // source.replace(this.REGEX_CLEAN, '');
     return [...cleaned.matchAll(this.REGEX_DETECT_IMPORT)]
-      .map(x => x[1])
+      .map(x => x[1] ?? x[2])
       .filter(x => !!x)
       .map(imp => {
         const result = this.resolvePath(imp, parent);
