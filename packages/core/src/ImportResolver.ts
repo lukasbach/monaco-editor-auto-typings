@@ -121,10 +121,21 @@ export class ImportResolver {
       }
     }
 
-    const pkgJson = await this.resolvePackageJson(
+    const doesPkgJsonHasSubpath = importResource.importPath?.length ?? 0 > 0;
+    let pkgJsonSubpath = doesPkgJsonHasSubpath ? `/${importResource.importPath}` : '';
+    let pkgJson = await this.resolvePackageJson(
       importResource.packageName,
-      this.versions?.[importResource.packageName]
+      this.versions?.[importResource.packageName],
+      doesPkgJsonHasSubpath ? importResource.importPath : undefined
     );
+
+    if (!pkgJson && doesPkgJsonHasSubpath) {
+      pkgJson = await this.resolvePackageJson(
+        importResource.packageName,
+        this.versions?.[importResource.packageName]
+      );
+      pkgJsonSubpath = '';
+    }
 
     if (pkgJson) {
       const pkg = JSON.parse(pkgJson);
@@ -132,7 +143,7 @@ export class ImportResolver {
         const typings = pkg.typings || pkg.types;
         this.createModel(
           pkgJson,
-          Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}/package.json`)
+          Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}${pkgJsonSubpath}/package.json`)
         );
         invokeUpdate(
           {
@@ -148,7 +159,7 @@ export class ImportResolver {
           kind: 'relative-in-package',
           packageName: importResource.packageName,
           sourcePath: '',
-          importPath: typings.startsWith('./') ? typings.slice(2) : typings,
+          importPath: path.join(importResource.importPath ?? "", typings.startsWith('./') ? typings.slice(2) : typings),
         };
       } else {
         const typingPackageName = `@types/${
@@ -179,7 +190,7 @@ export class ImportResolver {
               kind: 'relative-in-package',
               packageName: typingPackageName,
               sourcePath: '',
-              importPath: typings.startsWith('./') ? typings.slice(2) : typings,
+              importPath: path.join(importResource.importPath ?? "", typings.startsWith('./') ? typings.slice(2) : typings),
             };
           } else {
             invokeUpdate(failedProgressUpdate, this.options);
@@ -244,7 +255,28 @@ export class ImportResolver {
             },
             this.options
           );
-          return { source, at: path.join(importResource.sourcePath, importResource.importPath) + append };
+          return { source, at: fullPath };
+        }
+      }
+    }
+
+    const pkgJson = await this.resolvePackageJson(pkgName, version, path.join(importResource.sourcePath, importResource.importPath));
+
+    if (pkgJson) {
+      const { types } = JSON.parse(pkgJson);
+      if (types) {
+        const fullPath = path.join(importResource.sourcePath, importResource.importPath, types);
+        const source = await this.resolveSourceFile(pkgName, version, fullPath);
+        if (source) {
+          invokeUpdate(
+            {
+              type: 'LookedUpTypeFile',
+              path: path.join(pkgName, fullPath),
+              success: true,
+            },
+            this.options
+          );
+          return { source, at: fullPath };
         }
       }
     }
@@ -274,16 +306,18 @@ export class ImportResolver {
 
   private createModel(source: string, uri: Uri) {
     uri = uri.with({ path: uri.path.replace('@types/', '') });
-    monaco.editor.createModel(source, 'typescript', uri);
-    this.newImportsResolved = true;
+    if (!monaco.editor.getModel(uri)) {
+      monaco.editor.createModel(source, 'typescript', uri);
+      this.newImportsResolved = true;
+    }
   }
 
   private hashImportResourcePath(p: ImportResourcePath) {
     return importResourcePathToString(p);
   }
 
-  private async resolvePackageJson(packageName: string, version?: string): Promise<string | undefined> {
-    const uri = path.join(packageName + (version ? `@${version}` : ''), 'package.json');
+  private async resolvePackageJson(packageName: string, version?: string, subPath?: string): Promise<string | undefined> {
+    const uri = path.join(packageName + (version ? `@${version}` : ''), subPath ?? '', 'package.json');
     let isAvailable = false;
     let content: string | undefined = undefined;
 
@@ -297,7 +331,7 @@ export class ImportResolver {
     if (isAvailable) {
       return content ?? (await this.cache.getFile(uri));
     } else {
-      content = await this.sourceResolver.resolvePackageJson(packageName, version);
+      content = await this.sourceResolver.resolvePackageJson(packageName, version, subPath);
       if (content) {
         this.cache.storeFile(uri, content);
       }

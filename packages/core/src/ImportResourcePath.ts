@@ -27,7 +27,7 @@ export type ImportResourcePath =
 export const importResourcePathToString = (p: ImportResourcePath) => {
   switch (p.kind) {
     case 'package':
-      return path.join(p.packageName, p.importPath ?? '');
+      return path.join(p.packageName, p.importPath ?? '', 'package.json');
     case 'relative':
       return path.join(p.sourcePath, p.importPath);
     case 'relative-in-package':

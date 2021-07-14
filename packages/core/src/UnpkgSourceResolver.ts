@@ -1,8 +1,8 @@
 import { SourceResolver } from './SourceResolver';
 
 export class UnpkgSourceResolver implements SourceResolver {
-  public async resolvePackageJson(packageName: string, version: string | undefined): Promise<string | undefined> {
-    return await this.resolveFile(`https://unpkg.com/${packageName}${version ? `@${version}` : ''}/package.json`);
+  public async resolvePackageJson(packageName: string, version: string | undefined, subPath: string | undefined): Promise<string | undefined> {
+    return await this.resolveFile(`https://unpkg.com/${packageName}${version ? `@${version}` : ''}${subPath ? `/${subPath}` : ''}/package.json`);
   }
 
   public async resolveSourceFile(
