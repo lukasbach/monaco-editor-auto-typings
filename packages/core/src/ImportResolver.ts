@@ -130,10 +130,7 @@ export class ImportResolver {
     );
 
     if (!pkgJson && doesPkgJsonHasSubpath) {
-      pkgJson = await this.resolvePackageJson(
-        importResource.packageName,
-        this.versions?.[importResource.packageName]
-      );
+      pkgJson = await this.resolvePackageJson(importResource.packageName, this.versions?.[importResource.packageName]);
       pkgJsonSubpath = '';
     }
 
@@ -143,7 +140,9 @@ export class ImportResolver {
         const typings = pkg.typings || pkg.types;
         this.createModel(
           pkgJson,
-          Uri.parse(`${this.options.fileRootPath}node_modules/${importResource.packageName}${pkgJsonSubpath}/package.json`)
+          Uri.parse(
+            `${this.options.fileRootPath}node_modules/${importResource.packageName}${pkgJsonSubpath}/package.json`
+          )
         );
         invokeUpdate(
           {
@@ -159,7 +158,7 @@ export class ImportResolver {
           kind: 'relative-in-package',
           packageName: importResource.packageName,
           sourcePath: '',
-          importPath: path.join(importResource.importPath ?? "", typings.startsWith('./') ? typings.slice(2) : typings),
+          importPath: path.join(importResource.importPath ?? '', typings.startsWith('./') ? typings.slice(2) : typings),
         };
       } else {
         const typingPackageName = `@types/${
@@ -190,7 +189,10 @@ export class ImportResolver {
               kind: 'relative-in-package',
               packageName: typingPackageName,
               sourcePath: '',
-              importPath: path.join(importResource.importPath ?? "", typings.startsWith('./') ? typings.slice(2) : typings),
+              importPath: path.join(
+                importResource.importPath ?? '',
+                typings.startsWith('./') ? typings.slice(2) : typings
+              ),
             };
           } else {
             invokeUpdate(failedProgressUpdate, this.options);
@@ -260,7 +262,11 @@ export class ImportResolver {
       }
     }
 
-    const pkgJson = await this.resolvePackageJson(pkgName, version, path.join(importResource.sourcePath, importResource.importPath));
+    const pkgJson = await this.resolvePackageJson(
+      pkgName,
+      version,
+      path.join(importResource.sourcePath, importResource.importPath)
+    );
 
     if (pkgJson) {
       const { types } = JSON.parse(pkgJson);
@@ -316,7 +322,11 @@ export class ImportResolver {
     return importResourcePathToString(p);
   }
 
-  private async resolvePackageJson(packageName: string, version?: string, subPath?: string): Promise<string | undefined> {
+  private async resolvePackageJson(
+    packageName: string,
+    version?: string,
+    subPath?: string
+  ): Promise<string | undefined> {
     const uri = path.join(packageName + (version ? `@${version}` : ''), subPath ?? '', 'package.json');
     let isAvailable = false;
     let content: string | undefined = undefined;
