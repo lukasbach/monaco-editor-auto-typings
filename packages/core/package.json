@@ -16,7 +16,7 @@
     "build-doc": "typedoc src/index.ts"
   },
   "dependencies": {
-    "monaco-editor": "^0.21.2"
+    "monaco-editor": "^0.26.1"
   },
   "devDependencies": {
     "typedoc": "^0.20.10",
