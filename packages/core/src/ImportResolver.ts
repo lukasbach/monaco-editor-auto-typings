@@ -40,7 +40,9 @@ export class ImportResolver {
             importPath: '',
           },
           new RecursionDepth(this.options)
-        );
+        ).catch(e => {
+          console.error(e);
+        });
       }
     }
   }
@@ -60,7 +62,11 @@ export class ImportResolver {
 
     const imports = this.dependencyParser.parseDependencies(source, parent);
     for (const importCall of imports) {
-      await this.resolveImport(importCall, depth);
+      try {
+        await this.resolveImport(importCall, depth);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 
