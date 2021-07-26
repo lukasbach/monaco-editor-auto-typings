@@ -1,6 +1,6 @@
 {
   "name": "monaco-editor-auto-typings-demo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "private": true,
   "scripts": {
@@ -28,6 +28,6 @@
   },
   "dependencies": {
     "monaco-editor": "^0.26.1",
-    "monaco-editor-auto-typings": "^0.1.0"
+    "monaco-editor-auto-typings": "^0.1.1"
   }
 }
