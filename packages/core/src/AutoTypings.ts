@@ -43,7 +43,7 @@ export class AutoTypings implements monaco.IDisposable {
     const monacoInstance = options?.monaco ?? monaco;
 
     if (!monacoInstance) {
-      throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco')
+      throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco');
     }
 
     return new AutoTypings(editor, {
