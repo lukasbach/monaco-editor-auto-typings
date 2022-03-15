@@ -1,4 +1,3 @@
-import { editor, IDisposable, languages } from 'monaco-editor';
 import { SourceCache } from './SourceCache';
 import { Options } from './Options';
 import { DummySourceCache } from './DummySourceCache';
@@ -9,14 +8,14 @@ import * as monaco from 'monaco-editor';
 import { invokeUpdate } from './invokeUpdate';
 import { RecursionDepth } from './RecursionDepth';
 
-export class AutoTypings implements IDisposable {
+export class AutoTypings implements monaco.IDisposable {
   private static sharedCache?: SourceCache;
   private importResolver: ImportResolver;
   private debounceTimer?: number;
   private isResolving?: boolean;
-  private disposables: IDisposable[];
+  private disposables: monaco.IDisposable[];
 
-  private constructor(private editor: editor.ICodeEditor, private options: Options) {
+  private constructor(private editor: monaco.editor.ICodeEditor, private options: Options) {
     this.disposables = [];
     this.importResolver = new ImportResolver(options);
     const changeModelDisposable = editor.onDidChangeModelContent(e => {
@@ -27,15 +26,22 @@ export class AutoTypings implements IDisposable {
     if (!options.dontAdaptEditorOptions) {
       monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
         ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
-        moduleResolution: languages.typescript.ModuleResolutionKind.NodeJs,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
         allowSyntheticDefaultImports: true,
+        rootDir: options.fileRootPath,
       });
     }
   }
 
-  public static create(editor: editor.ICodeEditor, options?: Partial<Options>): AutoTypings {
+  public static create(editor: monaco.editor.ICodeEditor, options?: Partial<Options>): AutoTypings {
     if (options?.shareCache && options.sourceCache && !AutoTypings.sharedCache) {
       AutoTypings.sharedCache = options.sourceCache;
+    }
+
+    const monacoInstance = options?.monaco || monaco;
+
+    if (!monacoInstance) {
+      throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco')
     }
 
     return new AutoTypings(editor, {
@@ -51,6 +57,7 @@ export class AutoTypings implements IDisposable {
       fileRecursionDepth: 10,
       packageRecursionDepth: 3,
       ...options,
+      monaco: monacoInstance,
     });
   }
 

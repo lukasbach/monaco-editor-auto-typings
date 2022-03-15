@@ -1,6 +1,7 @@
 import { SourceCache } from './SourceCache';
 import { SourceResolver } from './SourceResolver';
 import { ProgressUpdate } from './ProgressUpdate';
+import type * as monaco from 'monaco-editor';
 
 export interface Options {
   /**
@@ -137,4 +138,8 @@ export interface Options {
    * @param error a textual representation of the error.
    */
   onError?: (error: string) => void;
+  /**
+   * instance of monaco editor
+   */
+  monaco?: typeof monaco;
 }
