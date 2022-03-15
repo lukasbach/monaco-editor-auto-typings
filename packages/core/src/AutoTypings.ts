@@ -135,7 +135,11 @@ export class AutoTypings implements monaco.IDisposable {
 
     if (this.importResolver.wereNewImportsResolved()) {
       if (!this.options.dontRefreshModelValueAfterResolvement) {
+        const currentPosition = this.editor.getPosition();
         model.setValue(model.getValue());
+        if (currentPosition) {
+          this.editor.setPosition(currentPosition);
+        }
       }
       this.importResolver.resetNewImportsResolved();
     }
