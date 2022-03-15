@@ -66,7 +66,11 @@ export class ImportResolver {
       try {
         await this.resolveImport(importCall, depth);
       } catch (e) {
-        console.error(e);
+        if (this.options.onError) {
+          this.options.onError?.((e as Error).message ?? e);
+        } else {
+          console.error(e);
+        }
       }
     }
   }
