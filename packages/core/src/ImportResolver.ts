@@ -94,21 +94,25 @@ export class ImportResolver {
   }
 
   private async resolveImportInPackage(importResource: ImportResourcePathRelativeInPackage, depth: RecursionDepth) {
-    const { source, at } = await this.loadSourceFileContents(importResource);
-    this.createModel(
-      source,
-      this.monaco.Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at))
-    );
-    await this.resolveImportsInFile(
-      source,
-      {
-        kind: 'relative-in-package',
-        packageName: importResource.packageName,
-        sourcePath: path.dirname(at),
-        importPath: '',
-      },
-      depth
-    );
+    const contents = await this.loadSourceFileContents(importResource);
+
+    if (contents) {
+      const { source, at } = contents;
+      this.createModel(
+        source,
+        this.monaco.Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at))
+      );
+      await this.resolveImportsInFile(
+        source,
+        {
+          kind: 'relative-in-package',
+          packageName: importResource.packageName,
+          sourcePath: path.dirname(at),
+          importPath: '',
+        },
+        depth
+      );
+    }
   }
 
   private async resolveImportFromPackageRoot(
@@ -215,7 +219,7 @@ export class ImportResolver {
 
   private async loadSourceFileContents(
     importResource: ImportResourcePathRelativeInPackage
-  ): Promise<{ source: string; at: string }> {
+  ): Promise<{ source: string; at: string } | null> {
     const progressUpdatePath = path.join(
       importResource.packageName,
       importResource.sourcePath,
@@ -295,9 +299,7 @@ export class ImportResolver {
     }
 
     invokeUpdate(failedProgressUpdate, this.options);
-    throw Error(
-      `Could not resolve ${importResource.packageName}/${importResource.sourcePath}${importResource.importPath}`
-    );
+    return null;
   }
 
   private getVersion(packageName: string) {
