@@ -32,12 +32,11 @@ const config: webpack.Configuration = {
     ],
   },
   devServer: {
-    contentBase: path.join(__dirname, 'app'),
+    static: path.join(__dirname, 'app'),
     historyApiFallback: true,
     compress: true,
     hot: true,
     port: 4000,
-    publicPath: '/',
   },
   output: {
     path: path.resolve(__dirname, 'app'),

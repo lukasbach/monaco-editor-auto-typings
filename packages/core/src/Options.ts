@@ -141,5 +141,5 @@ export interface Options {
   /**
    * instance of monaco editor
    */
-  monaco?: typeof monaco;
+  monaco: typeof monaco;
 }

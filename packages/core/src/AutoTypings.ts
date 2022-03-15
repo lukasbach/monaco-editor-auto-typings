@@ -8,6 +8,8 @@ import * as monaco from 'monaco-editor';
 import { invokeUpdate } from './invokeUpdate';
 import { RecursionDepth } from './RecursionDepth';
 
+type Editor = monaco.editor.ICodeEditor | monaco.editor.IStandaloneCodeEditor;
+
 export class AutoTypings implements monaco.IDisposable {
   private static sharedCache?: SourceCache;
   private importResolver: ImportResolver;
@@ -15,7 +17,7 @@ export class AutoTypings implements monaco.IDisposable {
   private isResolving?: boolean;
   private disposables: monaco.IDisposable[];
 
-  private constructor(private editor: monaco.editor.ICodeEditor, private options: Options) {
+  private constructor(private editor: Editor, private options: Options) {
     this.disposables = [];
     this.importResolver = new ImportResolver(options);
     const changeModelDisposable = editor.onDidChangeModelContent(e => {
@@ -24,21 +26,21 @@ export class AutoTypings implements monaco.IDisposable {
     this.disposables.push(changeModelDisposable);
     this.resolveContents();
     if (!options.dontAdaptEditorOptions) {
-      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-        ...monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
-        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+      options.monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        ...options.monaco.languages.typescript.typescriptDefaults.getCompilerOptions(),
+        moduleResolution: options.monaco.languages.typescript.ModuleResolutionKind.NodeJs,
         allowSyntheticDefaultImports: true,
         rootDir: options.fileRootPath,
       });
     }
   }
 
-  public static create(editor: monaco.editor.ICodeEditor, options?: Partial<Options>): AutoTypings {
+  public static create(editor: Editor, options?: Partial<Options>): AutoTypings {
     if (options?.shareCache && options.sourceCache && !AutoTypings.sharedCache) {
       AutoTypings.sharedCache = options.sourceCache;
     }
 
-    const monacoInstance = options?.monaco || monaco;
+    const monacoInstance = options?.monaco ?? monaco;
 
     if (!monacoInstance) {
       throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco')
