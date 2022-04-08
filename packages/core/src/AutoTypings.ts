@@ -40,7 +40,7 @@ export class AutoTypings implements monaco.IDisposable {
       AutoTypings.sharedCache = options.sourceCache;
     }
 
-    const monacoInstance = options?.monaco ?? (await import('monaco-editor')).default;
+    const monacoInstance = options?.monaco ?? (await import('monaco-editor'));
 
     if (!monacoInstance) {
       throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco');
