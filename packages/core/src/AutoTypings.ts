@@ -4,7 +4,7 @@ import { DummySourceCache } from './DummySourceCache';
 import { UnpkgSourceResolver } from './UnpkgSourceResolver';
 import { ImportResolver } from './ImportResolver';
 import * as path from 'path';
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 import { invokeUpdate } from './invokeUpdate';
 import { RecursionDepth } from './RecursionDepth';
 
@@ -35,12 +35,12 @@ export class AutoTypings implements monaco.IDisposable {
     }
   }
 
-  public static create(editor: Editor, options?: Partial<Options>): AutoTypings {
+  public static async create(editor: Editor, options?: Partial<Options>): Promise<AutoTypings> {
     if (options?.shareCache && options.sourceCache && !AutoTypings.sharedCache) {
       AutoTypings.sharedCache = options.sourceCache;
     }
 
-    const monacoInstance = options?.monaco ?? monaco;
+    const monacoInstance = options?.monaco ?? (await import("monaco-editor")).default;
 
     if (!monacoInstance) {
       throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco');
