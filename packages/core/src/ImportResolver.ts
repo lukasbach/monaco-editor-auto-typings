@@ -39,6 +39,7 @@ export class ImportResolver {
             kind: 'package',
             packageName: packageName,
             importPath: '',
+            isTypeOnly: false
           },
           new RecursionDepth(this.options)
         ).catch(e => {
@@ -104,7 +105,8 @@ export class ImportResolver {
       const { source, at } = contents;
       this.createModel(
         source,
-        this.monaco.Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at))
+        this.monaco.Uri.parse(this.options.fileRootPath + path.join(`node_modules/${importResource.packageName}`, at)),
+        importResource.isTypeOnly
       );
       await this.resolveImportsInFile(
         source,
@@ -113,6 +115,7 @@ export class ImportResolver {
           packageName: importResource.packageName,
           sourcePath: path.dirname(at),
           importPath: '',
+          isTypeOnly: importResource.isTypeOnly
         },
         depth
       );
@@ -157,7 +160,8 @@ export class ImportResolver {
           pkgJson,
           this.monaco.Uri.parse(
             `${this.options.fileRootPath}node_modules/${importResource.packageName}${pkgJsonSubpath}/package.json`
-          )
+          ),
+          importResource.isTypeOnly
         );
         invokeUpdate(
           {
@@ -174,6 +178,7 @@ export class ImportResolver {
           packageName: importResource.packageName,
           sourcePath: '',
           importPath: path.join(importResource.importPath ?? '', typings.startsWith('./') ? typings.slice(2) : typings),
+          isTypeOnly: importResource.isTypeOnly
         };
       } else {
         const typingPackageName = `@types/${
@@ -188,7 +193,8 @@ export class ImportResolver {
             const typings = pkg.typings || pkg.types;
             this.createModel(
               pkgJsonTypings,
-              this.monaco.Uri.parse(`${this.options.fileRootPath}node_modules/${typingPackageName}/package.json`)
+              this.monaco.Uri.parse(`${this.options.fileRootPath}node_modules/${typingPackageName}/package.json`),
+              importResource.isTypeOnly
             );
             invokeUpdate(
               {
@@ -208,6 +214,7 @@ export class ImportResolver {
                 importResource.importPath ?? '',
                 typings.startsWith('./') ? typings.slice(2) : typings
               ),
+              isTypeOnly: importResource.isTypeOnly
             };
           } else {
             invokeUpdate(failedProgressUpdate, this.options);
@@ -323,8 +330,11 @@ export class ImportResolver {
     });
   }
 
-  private createModel(source: string, uri: monaco.Uri) {
-    uri = uri.with({ path: uri.path.replace('@types/', '') });
+  private createModel(source: string, uri: monaco.Uri, isTypeimport:boolean ) {
+    console.log(`before: createModel( ${ uri.toString(true)} )`, isTypeimport)
+    if( !isTypeimport )
+      uri = uri.with({ path: uri.path.replace('@types/', '') });
+    console.log(`after: createModel( ${ uri.toString(true)} )`)
     if (!this.monaco.editor.getModel(uri)) {
       this.monaco.editor.createModel(source, 'typescript', uri);
       this.newImportsResolved = true;

@@ -4,6 +4,7 @@ export interface ImportResourcePathPackage {
   kind: 'package';
   packageName: string;
   importPath?: string;
+  isTypeOnly: boolean;
 }
 
 export interface ImportResourcePathRelative {
@@ -17,17 +18,19 @@ export interface ImportResourcePathRelativeInPackage {
   packageName: string;
   importPath: string;
   sourcePath: string;
+  isTypeOnly: boolean;
 }
 
 export type ImportResourcePath =
   | ImportResourcePathPackage
   | ImportResourcePathRelative
-  | ImportResourcePathRelativeInPackage;
+  | ImportResourcePathRelativeInPackage
+  ;
 
 export const importResourcePathToString = (p: ImportResourcePath) => {
   switch (p.kind) {
     case 'package':
-      return path.join(p.packageName, p.importPath ?? '', 'package.json');
+        return path.join(p.packageName, p.importPath ?? '', 'package.json');
     case 'relative':
       return path.join(p.sourcePath, p.importPath);
     case 'relative-in-package':

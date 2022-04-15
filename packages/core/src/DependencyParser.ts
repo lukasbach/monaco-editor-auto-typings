@@ -3,20 +3,25 @@ import * as path from 'path';
 
 export class DependencyParser {
   private REGEX_CLEAN = /[\n|\r]/g;
-  private REGEX_DETECT_IMPORT = /(?:(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+path=["']([^"']+)["']\s+\/>)/g;
+  // private REGEX_DETECT_IMPORT = /(?:(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+path=["']([^"']+)["']\s+\/>)/g;
+  private REGEX_DETECT_IMPORT = /(?:(?:(?:import)|(?:export))(?:\s+(type)\s+)?(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+path=["']([^"']+)["']\s+\/>)/g;
 
   public parseDependencies(source: string, parent: ImportResourcePath | string): ImportResourcePath[] {
     const cleaned = source; // source.replace(this.REGEX_CLEAN, '');
-    return [...cleaned.matchAll(this.REGEX_DETECT_IMPORT)]
-      .map(x => x[1] ?? x[2])
-      .filter(x => !!x)
-      .map(imp => {
-        const result = this.resolvePath(imp, parent);
+
+    const result = [ ...cleaned.matchAll(this.REGEX_DETECT_IMPORT) ]
+    console.log( 'REGEX_DETECT_IMPORT', result)
+    
+    return result
+      .map(x => ({ path: x[2] ?? x[3], isTypeOnly: x[1]!==undefined }) )
+      .filter( x => !!x.path )
+      .map(x => {
+        const result = this.resolvePath(x.path, x.isTypeOnly, parent);
         return result;
       });
   }
 
-  private resolvePath(importPath: string, parent: ImportResourcePath | string): ImportResourcePath {
+  private resolvePath(importPath: string, isTypeOnly:boolean, parent: ImportResourcePath | string): ImportResourcePath {
     if (typeof parent === 'string') {
       if (importPath.startsWith('.')) {
         return {
@@ -29,7 +34,8 @@ export class DependencyParser {
         return {
           kind: 'package',
           packageName: `${segments[0]}/${segments[1]}`,
-          importPath: segments.slice(2).join('/'),
+          importPath: segments.slice( 2 ).join('/'),
+          isTypeOnly: isTypeOnly
         };
       } else {
         const segments = importPath.split('/');
@@ -37,6 +43,7 @@ export class DependencyParser {
           kind: 'package',
           packageName: segments[0],
           importPath: segments.slice(1).join('/'),
+          isTypeOnly: isTypeOnly
         };
       }
     } else {
@@ -52,6 +59,7 @@ export class DependencyParser {
               packageName: parent.packageName,
               sourcePath: path.join(parent.sourcePath, parent.importPath),
               importPath: importPath,
+              isTypeOnly: isTypeOnly
             };
           } else if (importPath.startsWith('@')) {
             const segments = importPath.split('/');
@@ -59,6 +67,7 @@ export class DependencyParser {
               kind: 'package',
               packageName: `${segments[0]}/${segments[1]}`,
               importPath: segments.slice(2).join('/'),
+              isTypeOnly: isTypeOnly
             };
           } else {
             const segments = importPath.split('/');
@@ -66,6 +75,7 @@ export class DependencyParser {
               kind: 'package',
               packageName: segments[0],
               importPath: segments.slice(1).join('/'),
+              isTypeOnly: isTypeOnly
             };
           }
       }
