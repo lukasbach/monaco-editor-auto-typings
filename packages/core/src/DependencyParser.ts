@@ -3,17 +3,16 @@ import * as path from 'path';
 
 export class DependencyParser {
   private REGEX_CLEAN = /[\n|\r]/g;
-  // private REGEX_DETECT_IMPORT = /(?:(?:(?:import)|(?:export))(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+path=["']([^"']+)["']\s+\/>)/g;
-  private REGEX_DETECT_IMPORT = /(?:(?:(?:import)|(?:export))(?:\s+(type)\s+)?(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+path=["']([^"']+)["']\s+\/>)/g;
+  private REGEX_DETECT_IMPORT = /(?:(?:import|export)(?:.)*?from\s+["']([^"']+)["'])|(?:\/+\s+<reference\s+(?:path|types)=["']([^"']+)["']\s+\/>)/g;
 
   public parseDependencies(source: string, parent: ImportResourcePath | string): ImportResourcePath[] {
     const cleaned = source; // source.replace(this.REGEX_CLEAN, '');
 
     const result = [ ...cleaned.matchAll(this.REGEX_DETECT_IMPORT) ]
-    console.log( 'REGEX_DETECT_IMPORT', result)
+    // console.log( 'REGEX_DETECT_IMPORT', result)
     
     return result
-      .map(x => ({ path: x[2] ?? x[3], isTypeOnly: x[1]!==undefined }) )
+      .map(x => ({ path: x[1] ?? x[2], isTypeOnly: x[1]===undefined }) )
       .filter( x => !!x.path )
       .map(x => {
         const result = this.resolvePath(x.path, x.isTypeOnly, parent);
