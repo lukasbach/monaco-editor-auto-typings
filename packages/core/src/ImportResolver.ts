@@ -1,8 +1,6 @@
 import type * as monaco from 'monaco-editor';
 import { Options } from './Options';
 import { SourceCache } from './SourceCache';
-import { DummySourceCache } from './DummySourceCache';
-import { UnpkgSourceResolver } from './UnpkgSourceResolver';
 import { DependencyParser } from './DependencyParser';
 import {
   ImportResourcePath,
@@ -330,11 +328,11 @@ export class ImportResolver {
     });
   }
 
-  private createModel(source: string, uri: monaco.Uri, isTypeimport:boolean ) {
-    console.log(`before: createModel( ${ uri.toString(true)} )`, isTypeimport)
-    if( !isTypeimport )
+  private createModel(source: string, uri: monaco.Uri, isTypeOnly:boolean ) {
+    // console.log(`before: createModel( ${ uri.toString(true)} )`, isTypeOnly)
+    if( !isTypeOnly )
       uri = uri.with({ path: uri.path.replace('@types/', '') });
-    console.log(`after: createModel( ${ uri.toString(true)} )`)
+    // console.log(`after: createModel( ${ uri.toString(true)} )`)
     if (!this.monaco.editor.getModel(uri)) {
       this.monaco.editor.createModel(source, 'typescript', uri);
       this.newImportsResolved = true;
