@@ -22,7 +22,7 @@ cached in localStorage or elsewhere.
 
 ## Example
 
-Install via `yarn add monaco-editor-auto-typings` or `npm install monaco-editor-auto-typings --save`.
+Install via `yarn add monaco-editor-auto-typings monaco-editor` or `npm install monaco-editor-auto-typings monaco-editor --save`.
 
 ```typescript
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';

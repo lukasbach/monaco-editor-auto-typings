@@ -15,10 +15,11 @@
     "build": "tsc",
     "build-doc": "typedoc src/index.ts"
   },
-  "dependencies": {
-    "monaco-editor": "^0.33.0"
+  "peerDependencies": {
+    "monaco-editor": "*"
   },
   "devDependencies": {
+    "monaco-editor": "^0.33.0",
     "typedoc": "^0.22.13",
     "typescript": "^4.6.2"
   }
