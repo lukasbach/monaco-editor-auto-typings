@@ -35,7 +35,7 @@ export class DependencyParser {
           kind: 'relative-in-package',
           packageName: '@types/node',
           importPath: `${nodeImport[1]}.d.ts`,
-          sourcePath: ''
+          sourcePath: '',
         };
       } else {
         const segments = importPath.split('/');
