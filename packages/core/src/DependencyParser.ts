@@ -15,6 +15,14 @@ export class DependencyParser {
 
   private resolvePath(importPath: string, parent: ImportResourcePath | string): ImportResourcePath {
     const nodeImport = importPath.match(this.REGEX_NODE_MODULE);
+    if (nodeImport) {
+      return {
+        kind: 'relative-in-package',
+        packageName: '@types/node',
+        importPath: `${nodeImport[1]}.d.ts`,
+        sourcePath: '',
+      };
+    }
 
     if (typeof parent === 'string') {
       if (importPath.startsWith('.')) {
@@ -29,13 +37,6 @@ export class DependencyParser {
           kind: 'package',
           packageName: `${segments[0]}/${segments[1]}`,
           importPath: segments.slice(2).join('/'),
-        };
-      } else if (nodeImport) {
-        return {
-          kind: 'relative-in-package',
-          packageName: '@types/node',
-          importPath: `${nodeImport[1]}.d.ts`,
-          sourcePath: '',
         };
       } else {
         const segments = importPath.split('/');
