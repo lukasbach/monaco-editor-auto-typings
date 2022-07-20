@@ -33,6 +33,7 @@ export class ImportResolver {
     this.monaco = options.monaco!;
 
     if (options.preloadPackages && options.versions) {
+      this.versions = options.versions;
       for (const [packageName, version] of Object.entries(options.versions)) {
         this.resolveImport(
           {
