@@ -27,7 +27,7 @@ export class LocalStorageCache implements SourceCache {
 
     for (var i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith(TypeCache.LOCALSTORAGE_PREFIX)) {
+      if (key?.startsWith(LocalStorageCache.LOCALSTORAGE_PREFIX)) {
         foundKeys.push(key);
       }
     }
