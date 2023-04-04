@@ -23,11 +23,17 @@ export class LocalStorageCache implements SourceCache {
 
   public async clear(): Promise<void> {
     this.localCache = {};
-    for (let i = 0; i < localStorage.length; i++) {
+    const foundKeys: string[] = [];
+
+    for (var i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key?.startsWith(LocalStorageCache.LOCALSTORAGE_PREFIX)) {
-        localStorage.removeItem(key);
+      if (key?.startsWith(TypeCache.LOCALSTORAGE_PREFIX)) {
+        foundKeys.push(key);
       }
+    }
+
+    for (const key of foundKeys) {
+      localStorage.removeItem(key);
     }
   }
 }
