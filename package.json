@@ -21,11 +21,15 @@
     "prepublish": "yarn build && yarn copy-readme"
   },
   "devDependencies": {
+    "copy": "^0.3.2",
     "lerna": "^3.22.1",
-    "prettier": "^2.2.1",
-    "copy": "^0.3.2"
+    "prettier": "^2.2.1"
   },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "volta": {
+    "node": "16.20.0",
+    "yarn": "1.22.19"
+  }
 }
