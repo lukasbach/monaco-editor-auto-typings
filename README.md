@@ -45,6 +45,13 @@ const autoTypings = await AutoTypings.create(editor, {
 });
 ```
 
+## Custom Monaco Version
+
+By default, monaco-editor-auto-typings directly imports the monaco editor library itself. You can
+customize the monaco object with the `monaco` option. If you want to skip the entire import
+of monaco when bringing your own instance of monaco, you can import from `monaco-editor-auto-typings/custom-editor`
+instead of `monaco-editor-auto-typings`.
+
 ## Known Limitations
 
 - Currently, scoped packages (`@org/...`) are not supported. This feature is blocked by
