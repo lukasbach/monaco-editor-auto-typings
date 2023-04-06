@@ -53,7 +53,7 @@ const autoTypings = await AutoTypings.create(editor, {
 
 ## Configuration
 
-https://lukasbach.github.io/monaco-editor-auto-typings/docs/interfaces/options.html
+https://lukasbach.github.io/monaco-editor-auto-typings/docs/interfaces/Options.html
 
 ```typescript
 export interface Options {
