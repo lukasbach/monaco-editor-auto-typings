@@ -52,12 +52,6 @@ customize the monaco object with the `monaco` option. If you want to skip the en
 of monaco when bringing your own instance of monaco, you can import from `monaco-editor-auto-typings/custom-editor`
 instead of `monaco-editor-auto-typings`.
 
-## Known Limitations
-
-- Currently, scoped packages (`@org/...`) are not supported. This feature is blocked by
-  [this issue](https://github.com/microsoft/monaco-editor/issues/2295). `@types/...` packages
-  are not affected and work fine.
-
 ## Configuration
 
 https://lukasbach.github.io/monaco-editor-auto-typings/docs/interfaces/Options.html
