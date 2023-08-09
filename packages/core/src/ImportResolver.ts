@@ -254,7 +254,14 @@ export class ImportResolver {
       }
     } else {
       for (const append of appends) {
-        const fullPath = path.join(importResource.sourcePath, importResource.importPath) + append;
+        const resourcePath = pathJoin(
+          importResource.sourcePath,
+          importResource.importPath,
+        );
+        const fullPath =
+          (append === ".d.ts" && resourcePath.endsWith(".js")
+            ? resourcePath.slice(0, -3)
+            : resourcePath) + append;
         const source = await this.resolveSourceFile(pkgName, version, fullPath);
         invokeUpdate(
           {
