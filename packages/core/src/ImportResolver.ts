@@ -254,7 +254,7 @@ export class ImportResolver {
       }
     } else {
       for (const append of appends) {
-        const resourcePath = pathJoin(
+        const resourcePath = path.join(
           importResource.sourcePath,
           importResource.importPath,
         );
