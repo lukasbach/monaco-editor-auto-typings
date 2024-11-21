@@ -1,5 +1,5 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { AutoTypings, LocalStorageCache } from 'monaco-editor-auto-typings';
+import { AutoTypings, JsDelivrSourceResolver, LocalStorageCache, UnpkgSourceResolver } from 'monaco-editor-auto-typings';
 import { editorContents } from './editorContents';
 
 import './style.css';
@@ -13,6 +13,8 @@ const cache = new LocalStorageCache();
 AutoTypings.create(editor, {
   // Cache declaration files to local storage
   sourceCache: cache,
+
+  sourceResolver: new JsDelivrSourceResolver(),
 
   // Log progress updates to a div console
   onUpdate: (u, t) => {
