@@ -4247,10 +4247,10 @@ modify-values@^1.0.1:
   resolved "file:packages/demo"
   dependencies:
     monaco-editor "^0.34.0"
-    monaco-editor-auto-typings "^0.5.0"
+    monaco-editor-auto-typings "^0.4.5"
 
-monaco-editor-auto-typings@^0.5.0, "monaco-editor-auto-typings@file:D:\\GitHub\\monaco-editor-auto-typings\\packages\\core":
-  version "0.5.0"
+monaco-editor-auto-typings@^0.4.5, "monaco-editor-auto-typings@file:D:\\GitHub\\monaco-editor-auto-typings\\packages\\core":
+  version "0.4.5"
   resolved "file:packages/core"
 
 monaco-editor-webpack-plugin@^7.0.1:
