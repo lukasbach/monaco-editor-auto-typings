@@ -128,7 +128,7 @@ export interface Options {
 
   /**
    * Supply a custom resolver logic for declaration and package.json files.
-   * Defaults to {@link UnpkgSourceResolver}. Not recommended to change.
+   * Defaults to {@link JsDelivrSourceResolver}. Not recommended to change.
    */
   sourceResolver: SourceResolver;
 
