@@ -2,6 +2,7 @@ import { SourceCache } from './SourceCache';
 import { Options } from './Options';
 import { DummySourceCache } from './DummySourceCache';
 import { UnpkgSourceResolver } from './UnpkgSourceResolver';
+import { JsDelivrSourceResolver } from './JsDelivrSourceResolver';
 import { ImportResolver } from './ImportResolver';
 import * as path from 'path';
 import type * as monaco from 'monaco-editor';
@@ -46,6 +47,12 @@ export class AutoTypingsCore implements monaco.IDisposable {
       throw new Error('monacoInstance not found, you can specify the monaco instance via options.monaco');
     }
 
+    let resolver = options?.sourceResolver;
+
+    if (!(resolver instanceof UnpkgSourceResolver || resolver instanceof JsDelivrSourceResolver)) {
+      resolver = new JsDelivrSourceResolver();
+    }
+
     return new AutoTypingsCore(editor, {
       fileRootPath: 'inmemory://model/',
       onlySpecifiedPackages: false,
@@ -54,7 +61,7 @@ export class AutoTypingsCore implements monaco.IDisposable {
       dontAdaptEditorOptions: false,
       dontRefreshModelValueAfterResolvement: false,
       sourceCache: AutoTypingsCore.sharedCache ?? new DummySourceCache(),
-      sourceResolver: new UnpkgSourceResolver(),
+      sourceResolver: resolver,
       debounceDuration: 4000,
       fileRecursionDepth: 10,
       packageRecursionDepth: 3,

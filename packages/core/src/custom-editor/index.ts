@@ -6,3 +6,4 @@ export * from '../ProgressUpdate';
 export * from '../SourceCache';
 export * from '../SourceResolver';
 export * from '../UnpkgSourceResolver';
+export * from '../JsDelivrSourceResolver';

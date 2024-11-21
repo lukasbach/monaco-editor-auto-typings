@@ -1,8 +1,6 @@
 import type * as monaco from 'monaco-editor';
 import { Options } from './Options';
 import { SourceCache } from './SourceCache';
-import { DummySourceCache } from './DummySourceCache';
-import { UnpkgSourceResolver } from './UnpkgSourceResolver';
 import { DependencyParser } from './DependencyParser';
 import {
   ImportResourcePath,
