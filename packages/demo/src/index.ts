@@ -1,5 +1,10 @@
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
-import { AutoTypings, JsDelivrSourceResolver, LocalStorageCache, UnpkgSourceResolver } from 'monaco-editor-auto-typings';
+import {
+  AutoTypings,
+  JsDelivrSourceResolver,
+  LocalStorageCache,
+  UnpkgSourceResolver,
+} from 'monaco-editor-auto-typings';
 import { editorContents } from './editorContents';
 
 import './style.css';

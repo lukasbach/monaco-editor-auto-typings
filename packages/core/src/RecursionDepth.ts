@@ -1,7 +1,11 @@
 import { Options } from './Options';
 
 export class RecursionDepth {
-  constructor(private options: Options, private fileRecursionDepth = 0, private packageRecursionDepth = 0) {}
+  constructor(
+    private options: Options,
+    private fileRecursionDepth = 0,
+    private packageRecursionDepth = 0
+  ) {}
 
   public nextPackage() {
     return new RecursionDepth(this.options, this.fileRecursionDepth, this.packageRecursionDepth + 1);

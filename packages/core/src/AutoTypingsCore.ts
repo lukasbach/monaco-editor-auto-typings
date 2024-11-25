@@ -18,7 +18,10 @@ export class AutoTypingsCore implements monaco.IDisposable {
   private isResolving?: boolean;
   private disposables: monaco.IDisposable[];
 
-  public constructor(private editor: Editor, private options: Options) {
+  public constructor(
+    private editor: Editor,
+    private options: Options
+  ) {
     this.disposables = [];
     this.importResolver = new ImportResolver(options);
     const changeModelDisposable = editor.onDidChangeModelContent(e => {
